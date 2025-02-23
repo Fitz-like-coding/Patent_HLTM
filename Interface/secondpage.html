@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TopicBrowser</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/secondpage.css" type="text/css" />
+  </head>
+
+  <body>
+    <!-- <canvas id="canvas1" width="1280" height="100"></canvas> -->
+    <section id="history_panel">
+      <section id="model_history_block">
+        <p>Model Tree disabled</p>
+      </section>
+      <section id="model_history">
+        <p>Model Tree</p>
+        <!-- <ul id="model_records">
+                <li><span class="caret">Model1</span>
+                    <ul class="nested">
+                        <li class="active">Current Step</li>
+                    </ul>
+                </li>
+            </ul> -->
+        <div id="canvas_div">
+          <canvas id="canvas1" width="250" height="200"></canvas>
+        </div>
+        <button id="save_model" onclick="download()">Download models</button>
+        <button
+          id="load_model"
+          onclick="document.getElementById('myFiles').click()"
+        >
+          Load models
+        </button>
+        <input
+          type="file"
+          id="myFiles"
+          style="display: none"
+          onchange="selectFolder(event)"
+          webkitdirectory
+          mozdirectory
+          msdirectory
+          odirectory
+          directory
+          multiple
+        />
+      </section>
+      <section id="refine_history">
+        <p>Refinements History</p>
+        <ul id="refinement_records">
+          <li>
+            <span class="caret caret-down">Steps</span>
+            <ul class="nested active"></ul>
+          </li>
+        </ul>
+        <button id="undo_refinements" onclick="refinement_undo()">Undo</button>
+      </section>
+    </section>
+    <section id="model_panel">
+      <section id="topics_list">
+        <p>Model1 Detail</p>
+        <br />
+        <p>Topics</p>
+        <button id="view_button" onclick="viewSelectedTopic()">View</button>
+        <button id="merge_button" onclick="merge_apply()">Merge</button>
+        <button id="split_button" onclick="showSplitPanel(false)">Split</button>
+        <br />
+        <table id="topics_table">
+          <thead>
+            <tr>
+              <th scope="col" class="topic_index">Topic</th>
+              <th scope="col" class="topic_words">Topic Words</th>
+              <th scope="col" class="topic_weight_weightbar" colspan="2">
+                Weight
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- <tr>
+                        <td class="topic_index">Topic 1</td>
+                        <td class="topic_words">computer</td>
+                        <td class="topic_weight">1%</td>
+                    </tr>
+                    <tr>
+                        <td class="topic_index">Topic 2</td>
+                        <td class="topic_words">computer</td>
+                        <td class="topic_weight">1%</td>
+                    </tr>
+                    <tr>
+                        <td class="topic_index">Topic 3</td>
+                        <td class="topic_words">computer</td>
+                        <td class="topic_weight">1%</td>
+                    </tr> -->
+          </tbody>
+        </table>
+      </section>
+      <section id="intertopic_map">
+        <p>Intertopic Distance Map</p>
+        <svg class="predraw">
+          <circle
+            r="3.53553%"
+            cx="80%"
+            cy="15%"
+            style="
+              fill: none;
+              stroke-dasharray: 2, 2;
+              stroke: rgb(153, 153, 153);
+            "
+          ></circle>
+          <line
+            x1="80%"
+            x2="90%"
+            y1="11.5%"
+            y2="11.5%"
+            style="stroke: gray; opacity: 0.3"
+          ></line>
+          <circle
+            class="predraw"
+            r="5.59017%"
+            cx="80%"
+            cy="15%"
+            style="
+              fill: none;
+              stroke-dasharray: 2, 2;
+              stroke: rgb(153, 153, 153);
+            "
+          ></circle>
+          <line
+            x1="80%"
+            x2="90%"
+            y1="9.5%"
+            y2="9.5%"
+            style="stroke: gray; opacity: 0.3"
+          ></line>
+          <circle
+            r="7.90569%"
+            cx="80%"
+            cy="15%"
+            style="
+              fill: none;
+              stroke-dasharray: 2, 2;
+              stroke: rgb(153, 153, 153);
+            "
+          ></circle>
+          <line
+            x1="80%"
+            x2="90%"
+            y1="7.5%"
+            y2="7.5%"
+            style="stroke: gray; opacity: 0.3"
+          ></line>
+          <text x="65%" y="5%" fill="gray" size="2">
+            Marginal topic distribution
+          </text>
+          <text x="90%" y="12.46447%" fill="gray">2%</text>
+          <text x="90%" y="10.40983%" fill="gray">5%</text>
+          <text x="90%" y="8.09431%" fill="gray">10%</text>
+
+          <line
+            x1="0"
+            x2="100%"
+            y1="50%"
+            y2="50%"
+            stroke="gray"
+            opacity="0.3"
+          ></line>
+          <text x="0" y="49%" fill="gray">PC1</text>
+          <line
+            x1="50%"
+            x2="50%"
+            y1="0%"
+            y2="100%"
+            stroke="gray"
+            opacity="0.3"
+          ></line>
+          <text x="51%" y="3%" fill="gray">PC2</text>
+          <svg class="mycircle"></svg>
+        </svg>
+      </section>
+      <section id="topic_panel">
+        <section id="topic_detail">
+          <p>Topic Detail</p>
+          <button id="back" onclick="viewSelectedTopic()">back</button>
+          <input
+            id="summary_block"
+            type="text"
+            name="summary_block"
+            value="topic label disabled"
+            placeholder="topic label disabled"
+            disabled
+          />
+          <input
+            id="summary"
+            type="text"
+            name="summary"
+            value="computer science"
+            placeholder="this topic is about computer science"
+          />
+          <button id="add" onclick="showAddWordsPanel(false)">add</button>
+          <button id="delete" onclick="deleteWordFromTopic()">delete</button>
+          <div class="slider">
+            <div class="range-slider">
+              <input
+                class="lambda"
+                id="word_lambda"
+                type="range"
+                min="0"
+                max="100"
+                step="0.01"
+                value="0"
+                onChange="wordRangeSlide(this.value),loadSelectedTopic()"
+                onmousemove="wordRangeSlide(this.value)"
+              />
+            </div>
+            <div class="lambda-label">
+              <p>Slide to adjust the word threshold:</p>
+              <label for="word_lambda">
+                λ = <span id="word_lambdaValue">0</span>%
+              </label>
+            </div>
+          </div>
+          <table id="topic_words">
+            <thead>
+              <tr>
+                <th scope="col" class="topic_words">Top Words</th>
+                <th scope="col" class="topic_weight_weightbar" colspan="2">
+                  Weight
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- <tr draggable="true" ondrop="drop(event)" ondragstart="drag(event)" ondragover="allowDrop(event)">
+                            <td class="topic_words">Top Words</td>
+                            <td class="topic_weight">Weight</td>
+                        </tr> -->
+            </tbody>
+          </table>
+        </section>
+        <section id="docs_list">
+          <p>Documents</p>
+          <div class="slider">
+            <div class="range-slider">
+              <input
+                class="lambda"
+                id="doc_lambda"
+                type="range"
+                min="0"
+                max="100"
+                step="0.01"
+                value="0"
+                onChange="docRangeSlide(this.value), loadSelectedTopic()"
+                onmousemove="docRangeSlide(this.value)"
+              />
+            </div>
+            <div class="lambda-label">
+              <p>Slide to adjust the doc threshold:</p>
+              <label for="doc_lambda">
+                λ = <span id="doc_lambdaValue">0</span>%
+              </label>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" class="id">ID</th>
+                <th scope="col" class="document">Tweet Content</th>
+                <!-- <th scope="col" class="author">Author</th> -->
+                <th scope="col" class="weight_weightbar" colspan="2">Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- <tr>
+                            <td class="document">title1</td>
+                            <td class="author">author1</td>
+                            <td class="weight">weight1</td>
+                        </tr> -->
+            </tbody>
+          </table>
+          <button
+            id="doc_view"
+            onclick="showDocDetail(), setTitleAndAbstract()"
+          >
+            view
+          </button>
+          <button id="doc_delete" onclick="deleteDoc()">delete</button>
+        </section>
+      </section>
+    </section>
+    <section class="progress">
+      <section class="progress_bar">
+        <p>Progress Bar:</p>
+        <progress id="progress_p" max="100" value="0"><span>0</span>%</progress>
+      </section>
+      <section class="progress_button">
+        <button type="button" id="apply" onclick="refinement_apply()">
+          Apply Refinements
+        </button>
+      </section>
+    </section>
+    <section id="split_panel">
+      <label>Split Topic</label>
+      <p>Hint: Move words in SubTopic 1 to Subtopic 2 to split the topic.</p>
+      <section class="left_panel">
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">SubTopic 1</th>
+            </tr>
+          </thead>
+          <tbody class="split tbody topic1">
+            <tr>
+              <td>computer <button type="button" onclick="">-></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="right_panel">
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">SubTopic 2</th>
+            </tr>
+          </thead>
+          <tbody class="split tbody topic2">
+            <!-- <tr>
+                        <td>computer <button type="button" onclick=""><-</button></td>
+                    </tr> -->
+          </tbody>
+        </table>
+      </section>
+      <button id="split_apply" onclick="showSplitPanel(true)">Apply</button>
+      <button id="split_cancel" onclick="showSplitPanel(false)">Cancel</button>
+    </section>
+    <section id="add_words_panel">
+      <label>Add Words</label>
+      <p>Hint: Select suggested words to add or manually add perfered words.</p>
+      <section id="left_panel_block">
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">Suggested Words Disabled</th>
+            </tr>
+          </thead>
+        </table>
+      </section>
+      <section class="left_panel">
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">Suggested Words</th>
+            </tr>
+          </thead>
+          <tbody class="add tbody">
+            <tr>
+              <td>computer <button type="button" onclick="">+</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="right_panel">
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">
+                Words to add
+                <input
+                  id="perfered_word"
+                  type="text"
+                  name="perfered_word"
+                  value=""
+                  placeholder="input perfered word"
+                />
+                <button
+                  type="button"
+                  onclick="addWord(document.getElementById('perfered_word').value)"
+                >
+                  +
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="add tbody">
+            <!-- <tr>
+                        <td>computer <button type="button" onclick=""><-</button></td>
+                    </tr> -->
+          </tbody>
+        </table>
+      </section>
+      <button id="split_apply" onclick="showAddWordsPanel(true)">Apply</button>
+      <button id="split_cancel" onclick="showAddWordsPanel(false)">
+        Cancel
+      </button>
+    </section>
+    <section id="doc_detail">
+      <label for="title">Author:</label>
+      <br />
+      <textarea name="doc_title" id="doc_title" cols="30" rows="1" readonly>
+Author</textarea
+      >
+      <br />
+      <label for="abstract">Content:</label>
+      <br />
+      <textarea
+        name="doc_abstract"
+        id="doc_abstract"
+        cols="30"
+        rows="10"
+        readonly
+      >
+abstract</textarea
+      >
+      <button id="doc_view_cancel" onclick="showDocDetail()">Close</button>
+    </section>
+    <div class="modal"><!-- Place at bottom of page --></div>
+    <script>
+      const QE_API_ADDRESS = "http://localhost:8060/";
+      const MODEL_API_ADDRESS = "http://localhost:8050/";
+      const iters = "10";
+      const BASELINE = 0;
+
+      if (BASELINE == 1) {
+        var x = document.getElementById("model_history_block");
+        x.style.display = "block";
+      }
+      if (BASELINE == 1) {
+        var x = document.getElementById("left_panel_block");
+        x.style.display = "block";
+      }
+      if (BASELINE == 1) {
+        var x = document.getElementById("summary_block");
+        x.style.display = "block";
+      }
+
+      function loadTopicList() {
+        var table = document
+          .getElementById("topics_table")
+          .getElementsByTagName("tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+
+        //show TopicList
+        var topic_weights = topic_list.map(function (d) {
+          return parseFloat(d.weight);
+        });
+        var weight_max = Math.max.apply(null, topic_weights);
+
+        topic_list.forEach(function (currentValue, index) {
+          if (topic_list[index].keep) {
+            var row = table.insertRow();
+            row.id =
+              "topic_" +
+              stringToID(
+                currentValue.name
+                  .replace(/\s/g, "")
+                  .replaceAll("+", "_")
+                  .toLowerCase()
+              );
+            var cell1 = row.insertCell();
+            cell1.className = "topic_index";
+            cell1.contentEditable = read_only ? false : true;
+            cell1.innerHTML = currentValue.name;
+            var cell2 = row.insertCell();
+            cell2.className = "topic_words";
+            cell2.innerHTML = currentValue.words
+              .slice(
+                currentValue.add_words.length,
+                10 + currentValue.add_words.length
+              )
+              .join(" ");
+            var cell3 = row.insertCell();
+            cell3.className = "topic_weight_bar";
+            cell3.innerHTML =
+              "<div style='margin-left:" +
+              parseFloat(
+                (1 - parseFloat(currentValue.weight) / weight_max) * 100
+              ).toFixed(2) +
+              "%" +
+              "; background-color:blue; text-align: right'><span>&nbsp;</span></div>";
+            var cell4 = row.insertCell();
+            cell4.className = "topic_weight";
+            cell4.innerHTML = currentValue.weight;
+
+            if (currentValue.name == view_topic) {
+              row.className += " active";
+            }
+          } else {
+            var row = table.insertRow();
+            row.id =
+              "topic_" +
+              stringToID(
+                currentValue.name
+                  .replace(/\s/g, "")
+                  .replaceAll("+", "_")
+                  .toLowerCase()
+              );
+            var cell1 = row.insertCell();
+            cell1.className = "topic_index";
+            cell1.innerHTML = "<del>" + currentValue.name + "</del>";
+            var cell2 = row.insertCell();
+            cell2.className = "topic_words";
+            cell2.innerHTML =
+              "<del>" + currentValue.words.slice(0, 10).join(" ") + "</del>";
+            var cell3 = row.insertCell();
+            cell3.className = "topic_weight_bar";
+            cell3.innerHTML =
+              "<del><div style='margin-left:" +
+              parseFloat(
+                (1 - parseFloat(currentValue.weight) / weight_max) * 100
+              ).toFixed(2) +
+              "%" +
+              "; background-color:black; text-align: right'><span>&nbsp;</span></div></del>";
+            var cell4 = row.insertCell();
+            cell4.className = "topic_weight";
+            cell4.innerHTML = "<del>" + currentValue.weight + "</del>";
+          }
+        });
+        var thead = document
+          .getElementById("topics_table")
+          .getElementsByTagName("thead")[0];
+        thead.rows[0].cells[0].style.width =
+          table.rows[0].cells[0].offsetWidth + "px";
+        thead.rows[0].cells[1].style.width =
+          table.rows[0].cells[1].offsetWidth + "px";
+        thead.rows[0].cells[2].style.width =
+          table.rows[0].cells[2].offsetWidth +
+          table.rows[0].cells[3].offsetWidth +
+          table.rows[0].cells[3].scrollWidth +
+          "px";
+
+        document
+          .querySelectorAll("#topics_table tbody .topic_index")
+          .forEach((e, index) =>
+            e.addEventListener("blur", function (event) {
+              var previous_name = topic_list[index].name;
+              if (topic_list[index].merge || topic_list[index].split) {
+                alert("Can't rename new topics.");
+                topic_list[index].name = previous_name;
+                loadTopicList();
+                updateRefinementHistory();
+                return;
+              }
+              if (previous_name.trim() != e.textContent.trim()) {
+                for (var i = 0; i < topic_list.length; i++) {
+                  if (
+                    e.textContent.trim() == topic_list[i].name.trim() ||
+                    e.textContent.trim().length == 0
+                  ) {
+                    alert("please enter a unique topic name");
+                    topic_list[index].name = previous_name;
+                    loadTopicList();
+                    updateRefinementHistory();
+                    return;
+                  }
+                }
+
+                topic_list[index].name = e.textContent.trim();
+                refine_history.push({
+                  step:
+                    "RenameTopic: " +
+                    '"' +
+                    previous_name +
+                    '" -> "' +
+                    topic_list[index].name +
+                    '"',
+                  topics: $.extend(true, [], topic_list),
+                });
+                loadTopicList();
+                updateRefinementHistory();
+                console.log(topic_list);
+              }
+            })
+          );
+
+        document
+          .querySelectorAll("#topics_table tbody tr")
+          .forEach((e, index) =>
+            e.addEventListener("click", function () {
+              // var current = document.querySelectorAll('#topics_table tbody .active');
+              if (this.className.includes(" active")) {
+                this.className = this.className.replace(" active", "");
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).className.baseVal = "";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.fill = "rgb(31, 119, 180)";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.opacity = "0.2";
+              } else if (
+                topic_list[index].keep &&
+                !topic_list[index].new_topic
+              ) {
+                this.className += " active";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).className.baseVal = "active";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.fill = "rgb(255, 0, 0)";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.opacity = "0.3";
+              }
+            })
+          );
+
+        document
+          .querySelectorAll("#topics_table tbody tr")
+          .forEach((e, index) =>
+            e.addEventListener("mouseover", function (event) {
+              this.style.background = "rgba(255, 0, 0, 0.2)";
+              if (topic_list[index].new_topic && topic_list[index].split) {
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.fill = "rgb(255, 0, 0)";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.opacity = "0.0";
+              } else {
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.fill = "rgb(255, 0, 0)";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.opacity = "0.2";
+              }
+            })
+          );
+
+        document
+          .querySelectorAll("#topics_table tbody tr")
+          .forEach((e, index) =>
+            e.addEventListener("mouseout", function (event) {
+              this.style.background = "";
+              var dot_class = document.getElementById(
+                "dot_" + this.id.substring(6)
+              ).className.baseVal;
+              if (dot_class == "active") {
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.fill = "rgb(255, 0, 0)";
+                document.getElementById(
+                  "dot_" + this.id.substring(6)
+                ).style.opacity = "0.3";
+              } else {
+                if (topic_list[index].new_topic && topic_list[index].split) {
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.fill = "rgb(255, 0, 0)";
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.opacity = "0.0";
+                } else if (topic_list[index].keep) {
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.fill = "rgb(31, 119, 180)";
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.opacity = "0.2";
+                } else {
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.fill = "rgb(0, 0, 0)";
+                  document.getElementById(
+                    "dot_" + this.id.substring(6)
+                  ).style.opacity = "0.1";
+                }
+              }
+            })
+          );
+
+        drawTopicCircles();
+      }
+
+      // code for the merge feature
+      var merge_topic;
+
+      function initialize_MergeTopics() {
+        merge_topic = {
+          name: "Topic new",
+          summary: [],
+          words: [],
+          words_weight: [],
+          weight: "/",
+          docs_title: [],
+          docs_author: [],
+          docs_id: [],
+          docs_body: [],
+          docs_weight: [],
+          suggested_words: [],
+          keep: true,
+          new_topic: true,
+          add_words: [],
+          remove_words: [],
+          remove_documents: [],
+          split: false,
+          merge: true,
+          child: [],
+          parent: [],
+          coordinate: {
+            x: 0.0,
+            y: 0.0,
+          },
+        };
+      }
+
+      function getSelectedTopic(target_topic) {
+        for (var i = 0; i < topic_list.length; i++) {
+          if (topic_list[i].name == target_topic) {
+            return topic_list[i];
+          }
+        }
+        return 0;
+      }
+
+      function merge_apply() {
+        initialize_MergeTopics();
+
+        var current = document.querySelectorAll("#topics_table tbody .active");
+        if (current.length <= 1) {
+          alert("Select multiple topics to merge!");
+          return;
+        }
+
+        var newweight = 0;
+        total_weight = 1e-20;
+        new_x = 0;
+        new_y = 0;
+        for (i = 0; i < current.length; i++) {
+          target_topic = getSelectedTopic(current[i].childNodes[0].innerHTML);
+          total_weight += parseFloat(target_topic.weight);
+        }
+        for (i = 0; i < current.length; i++) {
+          target_topic = getSelectedTopic(current[i].childNodes[0].innerHTML);
+          merge_topic.words = [
+            ...new Set(merge_topic.words.concat(target_topic.words)),
+          ];
+          merge_topic.parent.push(target_topic.name);
+          newweight += parseFloat(target_topic.weight);
+          new_x +=
+            (parseFloat(target_topic.weight) / total_weight) *
+            parseFloat(target_topic.coordinate.x);
+          new_y +=
+            (parseFloat(target_topic.weight) / total_weight) *
+            parseFloat(target_topic.coordinate.y);
+          console.log(
+            parseFloat(target_topic.weight),
+            parseFloat(target_topic.coordinate.x),
+            parseFloat(target_topic.coordinate.y)
+          );
+        }
+        merge_topic.name = merge_topic.parent.join("+");
+
+        //todo: calculate the wight and coordinate of the new topic.
+        merge_topic.weight = newweight + "%";
+        merge_topic.coordinate = {
+          x: new_x,
+          y: new_y,
+        };
+
+        for (i = 0; i < current.length; i++) {
+          target_topic = getSelectedTopic(current[i].childNodes[0].innerHTML);
+          target_topic.child = [merge_topic.name];
+          target_topic.keep = false;
+          target_topic.merge = true;
+        }
+
+        topic_list.push($.extend(true, {}, merge_topic));
+
+        refine_history.push({
+          step: "MergeTopics: " + merge_topic.name,
+          topics: $.extend(true, [], topic_list),
+        });
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadTopicList();
+        updateRefinementHistory();
+        console.log("merge_topic");
+        console.log(topic_list);
+      }
+
+      // code for the split feature
+
+      var split_topic, split_topic2;
+
+      function initialize_SplitTopics() {
+        split_topic = {
+          name: "Topic new",
+          summary: [],
+          words: [],
+          words_weight: [],
+          weight: "/",
+          docs_title: [],
+          docs_author: [],
+          docs_id: [],
+          docs_body: [],
+          docs_weight: [],
+          suggested_words: [],
+          keep: true,
+          new_topic: true,
+          add_words: [],
+          remove_words: [],
+          remove_documents: [],
+          split: true,
+          merge: false,
+          child: [],
+          parent: [],
+          coordinate: {
+            x: 0.0,
+            y: 0.0,
+          },
+        };
+        split_topic2 = {
+          name: "Topic new",
+          summary: [],
+          words: [],
+          words_weight: [],
+          weight: "/",
+          docs_title: [],
+          docs_author: [],
+          docs_id: [],
+          docs_body: [],
+          docs_weight: [],
+          suggested_words: [],
+          keep: true,
+          new_topic: true,
+          add_words: [],
+          remove_words: [],
+          remove_documents: [],
+          split: true,
+          merge: false,
+          child: [],
+          parent: [],
+          coordinate: {
+            x: 0.0,
+            y: 0.0,
+          },
+        };
+      }
+
+      const showSplitPanel = async (apply) => {
+        if (apply) {
+          const result = await split_apply();
+        }
+        initialize_SplitTopics();
+
+        var x = document.getElementById("split_panel");
+        if (x.style.display != "block") {
+          var current = document.querySelectorAll(
+            "#topics_table tbody .active"
+          );
+          if (current.length != 1) {
+            alert("Select one topic to split!");
+            return;
+          }
+
+          var parent_topic = document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML;
+          // var candidate_words = document.querySelector("#topics_table tbody .active")
+          //     .getElementsByTagName("td")[1]
+          //     .innerHTML.split(' ');
+          var selected_topic = getSelectedTopic(parent_topic);
+          var candidate_words = selected_topic.words.slice(
+            selected_topic.add_words.length,
+            selected_topic.words.length
+          );
+          split_topic.words = candidate_words;
+          split_topic.name = parent_topic + "-1";
+          split_topic2.name = parent_topic + "-2";
+          split_topic.parent = [parent_topic];
+          split_topic2.parent = [parent_topic];
+
+          var table = document.getElementsByClassName("split tbody topic1")[0];
+          var rowCount = table.rows.length;
+          for (var i = rowCount - 1; i >= 0; i--) {
+            table.deleteRow(i);
+          }
+          var table2 = document.getElementsByClassName("split tbody topic2")[0];
+          var rowCount = table2.rows.length;
+          for (var i = rowCount - 1; i >= 0; i--) {
+            table2.deleteRow(i);
+          }
+          candidate_words.forEach(function (currentValue) {
+            var row = table.insertRow();
+            var cell1 = row.insertCell();
+            cell1.innerHTML =
+              currentValue +
+              "<button type='button' onclick='split_addWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex)'>-></button>";
+          });
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      };
+
+      function split_addWord(term, row_Index) {
+        var word = /\w+/g.exec(term)[0];
+        var left_table =
+          document.getElementsByClassName("split tbody topic1")[0];
+        var right_table =
+          document.getElementsByClassName("split tbody topic2")[0];
+        if (!split_topic2.words.includes(word)) {
+          split_topic2.words.push(word);
+          var row = right_table.insertRow();
+          var cell1 = row.insertCell();
+          cell1.innerHTML =
+            word +
+            "<button type='button' onclick='split_removeWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex)'><-</button>";
+          const index = split_topic.words.indexOf(word);
+          split_topic.words.splice(index, 1);
+          left_table.deleteRow(row_Index - 1);
+        }
+      }
+
+      function split_removeWord(term, row_Index) {
+        var word = /\w+/g.exec(term)[0];
+        var left_table =
+          document.getElementsByClassName("split tbody topic1")[0];
+        var right_table =
+          document.getElementsByClassName("split tbody topic2")[0];
+        if (!split_topic.words.includes(word)) {
+          split_topic.words.push(word);
+          var row = left_table.insertRow();
+          var cell1 = row.insertCell();
+          cell1.innerHTML =
+            word +
+            "<button type='button' onclick='split_addWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex)'>-></button>";
+          const index = split_topic2.words.indexOf(word);
+          split_topic2.words.splice(index, 1);
+          right_table.deleteRow(row_Index - 1);
+        }
+      }
+
+      function split_apply() {
+        // console.log(JSON.parse(JSON.stringify(refine_history)));
+        var parent_index = document.querySelector(
+          "#topics_table tbody .active"
+        ).rowIndex;
+        topic_list[parent_index - 1].child = [
+          split_topic.name,
+          split_topic2.name,
+        ];
+        topic_list[parent_index - 1].split = true;
+        topic_list[parent_index - 1].keep = false;
+        topic_list.splice(parent_index, 0, split_topic2);
+        topic_list.splice(parent_index, 0, split_topic);
+
+        //todo: calculate the wights and coordinates of the new topics.
+        split_topic.weight =
+          parseFloat(topic_list[parent_index - 1].weight) / 2 + "%";
+        split_topic.coordinate = {
+          x: -0.05,
+          y: -0.05,
+        };
+
+        split_topic2.weight =
+          parseFloat(topic_list[parent_index - 1].weight) / 2 + "%";
+        split_topic2.coordinate = {
+          x: -0.06,
+          y: -0.06,
+        };
+
+        refine_history.push({
+          step:
+            "SplitTopic: " +
+            topic_list[parent_index - 1].name +
+            "." +
+            ' "' +
+            split_topic2.words.join() +
+            '"',
+          topics: $.extend(true, [], topic_list),
+        });
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadTopicList();
+        updateRefinementHistory();
+        console.log("split_topic");
+        console.log(topic_list);
+      }
+
+      function viewSelectedTopic() {
+        var current = document.querySelectorAll("#topics_table tbody .active");
+        if (current.length != 1) {
+          alert("Select one topic to view the detail!");
+          return;
+        }
+        var header = document.querySelectorAll("#topic_detail p")[0];
+        header.innerHTML = current[0].childNodes[0].innerHTML + " Detail";
+        var x = document.getElementById("topic_panel");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+          view_topic = current[0].cells[0].innerHTML;
+          document.getElementById("word_lambda").value = 0;
+          document.getElementById("word_lambdaValue").innerHTML = 0;
+          document.getElementById("doc_lambda").value = 0;
+          document.getElementById("doc_lambdaValue").innerHTML = 0;
+          loadSelectedTopic();
+        } else {
+          x.style.display = "none";
+          view_topic = "";
+          loadTopicList();
+          refreshCircles();
+        }
+      }
+
+      function loadSelectedTopic() {
+        //refresh topic detail and docs detail
+        var table = document
+          .querySelector("#docs_list")
+          .getElementsByTagName("tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+
+        var selected = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        var summary = document.getElementById("summary");
+        summary.value = "this topic is about " + '"' + selected.summary + '".';
+
+        var table = document
+          .getElementById("topic_words")
+          .getElementsByTagName("tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+        var words_weight = selected.words.map(function (currentValue, index) {
+          return parseFloat(selected.words_weight[index]);
+        });
+        var weight_max = Math.max.apply(
+          null,
+          words_weight.filter(function (d) {
+            return d >= 0;
+          })
+        );
+        var threshold = document.getElementById("word_lambda").value;
+        document.getElementById("word_lambda").max = weight_max;
+        selected.words.forEach(function (currentValue, index) {
+          if (parseFloat(selected.words_weight[index]) < threshold) return;
+
+          var row = table.insertRow();
+          if (selected.words_edited[index]) row.className = "edited";
+          row.draggable = read_only ? false : true;
+          row.addEventListener("drop", drop_topicWord);
+          row.addEventListener("dragstart", drag_topicWord);
+          row.addEventListener("dragover", allowDrop);
+          var cell1 = row.insertCell();
+          cell1.className = "topic_words";
+          cell1.innerHTML = currentValue;
+          var cell2 = row.insertCell();
+          cell2.className = "topic_weightbar";
+          var weight =
+            selected.words_weight[index] == "?"
+              ? "0.00%"
+              : selected.words_weight[index];
+          cell2.innerHTML =
+            "<div style='margin-left:" +
+            parseFloat((1 - parseFloat(weight) / weight_max) * 100).toFixed(2) +
+            "%" +
+            "; background-color:blue; text-align: right'><span>&nbsp;</span></div>";
+          var cell3 = row.insertCell();
+          cell3.className = "topic_weight";
+          cell3.innerHTML = selected.words_weight[index];
+          if (selected.words_edited[index] == true) row.draggable = false;
+        });
+        var thead = document
+          .getElementById("topic_words")
+          .getElementsByTagName("thead")[0];
+        if (table.rows.length > 0) {
+          thead.rows[0].cells[0].style.width =
+            table.rows[0].cells[0].offsetWidth + "px";
+          thead.rows[0].cells[1].style.width =
+            table.rows[0].cells[1].offsetWidth +
+            table.rows[0].cells[2].offsetWidth +
+            table.rows[0].cells[2].scrollWidth +
+            "px";
+        }
+
+        if (table.rows.length > 0) table.rows[0].className += " active";
+
+        var table = document
+          .querySelector("#docs_list")
+          .getElementsByTagName("tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+
+        var docs_weight = selected.docs_weight.map(function (
+          currentValue,
+          index
+        ) {
+          return parseFloat(selected.docs_weight[index]);
+        });
+        var weight_max = Math.max.apply(null, docs_weight);
+        var threshold = document.getElementById("doc_lambda").value;
+        document.getElementById("doc_lambda").max = weight_max;
+
+        selected.docs_title.forEach(function (currentValue, index) {
+          if (parseFloat(selected.docs_weight[index]) < threshold) return;
+
+          var row = table.insertRow();
+          var cell2 = row.insertCell();
+          cell2.className = "id";
+          cell2.innerHTML = selected.docs_id[index];
+          var cell1 = row.insertCell();
+          cell1.className = "document";
+          cell1.innerHTML = currentValue;
+          var cell3 = row.insertCell();
+          cell3.className = "weightbar";
+          cell3.innerHTML =
+            "<div style='margin-left:" +
+            parseFloat(
+              (1 - parseFloat(selected.docs_weight[index]) / weight_max) * 100
+            ).toFixed(2) +
+            "%" +
+            "; background-color:blue; text-align: right'><span>&nbsp;</span></div>";
+          var cell4 = row.insertCell();
+          cell4.className = "weight";
+          cell4.innerHTML = selected.docs_weight[index];
+        });
+        var thead = document
+          .getElementById("docs_list")
+          .getElementsByTagName("thead")[0];
+        if (table.rows.length > 0) {
+          thead.rows[0].cells[0].style.width =
+            table.rows[0].cells[0].offsetWidth + "px";
+          thead.rows[0].cells[1].style.width =
+            table.rows[0].cells[1].offsetWidth + "px";
+          thead.rows[0].cells[2].style.width =
+            table.rows[0].cells[2].offsetWidth +
+            table.rows[0].cells[3].offsetWidth +
+            table.rows[0].cells[3].scrollWidth +
+            "px";
+        }
+
+        if (table.rows.length > 0) table.rows[0].className += " active";
+
+        document.querySelectorAll("#topic_words tbody tr").forEach((e, index) =>
+          e.addEventListener("click", function () {
+            var current = document.querySelectorAll(
+              "#topic_words tbody .active"
+            );
+            if (current.length > 0) {
+              for (i = 0; i < current.length; i++) {
+                current[i].className = current[i].className.replace(
+                  " active",
+                  ""
+                );
+              }
+            }
+            this.className += " active";
+          })
+        );
+
+        document.querySelectorAll("#docs_list tbody tr").forEach((e, index) =>
+          e.addEventListener("click", function () {
+            var current = document.querySelectorAll("#docs_list tbody .active");
+            if (current.length > 0) {
+              for (i = 0; i < current.length; i++) {
+                current[i].className = current[i].className.replace(
+                  " active",
+                  ""
+                );
+              }
+            }
+            this.className += " active";
+          })
+        );
+
+        if (read_only) {
+          var table = document
+            .getElementById("topic_words")
+            .getElementsByTagName("tbody")[0];
+          var rowCount = table.rows.length;
+          for (var i = rowCount - 1; i >= 0; i--) {
+            table.rows[i].draggable = false;
+          }
+        }
+      }
+
+      // code for topic words level operations
+      var temp_words;
+      var isSuggested;
+
+      function addWord(term, suggested = false) {
+        if (suggested) console.log(/\w+/g.exec(term)[0], suggested);
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        var word = /\w+/g.exec(term)[0];
+        var table = document.getElementsByClassName("add tbody")[1];
+        if (selected_topic.words.includes(word)) {
+          alert("Already exist!");
+          return;
+        }
+
+        $.ajax({
+          url: QE_API_ADDRESS + "&preprocess=" + word,
+          success: function (data) {
+            if (data["state"] == true) {
+              word = data["processed_word"];
+              if (!temp_words.includes(word)) {
+                temp_words.push(word);
+                if (suggested) isSuggested.push(true);
+                else isSuggested.push(false);
+                var row = table.insertRow();
+                var cell1 = row.insertCell();
+                cell1.innerHTML =
+                  word +
+                  "<button type='button' onclick='removeWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex)'>-</button>";
+              }
+            } else {
+              alert("input word not exist in the vocabulary list.");
+              console.log("error");
+            }
+          },
+          error: function (xhr, options, err) {
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+
+        // if (!temp_words.includes(word)) {
+        //     temp_words.push(word)
+        //     var row = table.insertRow();
+        //     var cell1 = row.insertCell();
+        //     cell1.innerHTML = word +
+        //         "<button type='button' onclick='removeWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex)'>-</button>";
+        // }
+      }
+
+      function removeWord(term, rowIndex) {
+        var word = /\w+/g.exec(term)[0];
+        var table = document.getElementsByClassName("add tbody")[1];
+        if (temp_words.includes(word)) {
+          const index = temp_words.indexOf(word);
+          temp_words.splice(index, 1);
+          isSuggested.splice(index, 1);
+          table.deleteRow(rowIndex - 1);
+        }
+      }
+
+      function addWords_apply() {
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        var selected_row = document.querySelector(
+          "#topic_detail tbody .active"
+        );
+        var selected_word = selected_row.cells[0].innerHTML;
+        // var selected_index = selected_topic.words.indexOf(selected_word);
+
+        if (temp_words.length == 0) return;
+        selected_topic.add_words = [
+          ...new Set(selected_topic.add_words.concat(temp_words)),
+        ];
+        // selected_topic.words.splice(selected_index + 1, 0, ...temp_words);
+        // selected_topic.words_weight.splice(selected_index + 1, 0, ...Array(temp_words.length).fill('?'));
+        selected_topic.words.splice(0, 0, ...temp_words);
+        selected_topic.words_weight.splice(
+          0,
+          0,
+          ...Array(temp_words.length).fill("?")
+        );
+        selected_topic.words_edited.splice(
+          0,
+          0,
+          ...Array(temp_words.length).fill(true)
+        );
+
+        refine_history.push({
+          step:
+            "AddWords: " +
+            selected_topic.name +
+            '. "' +
+            // temp_words.join() +
+            temp_words.map((x, i) => (isSuggested[i] ? x + "*" : x)) +
+            '"',
+          topics: $.extend(true, [], topic_list),
+        });
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadSelectedTopic();
+        updateRefinementHistory();
+        console.log("add_word");
+        console.log(topic_list);
+      }
+
+      const showAddWordsPanel = async (apply) => {
+        if (apply) {
+          const result = await addWords_apply();
+        }
+        var x = document.getElementById("add_words_panel");
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        console.log(selected_topic);
+        var suggested_words = selected_topic.suggested_words.filter(
+          (x) => !selected_topic.words.includes(x)
+        );
+        temp_words = [];
+        isSuggested = [];
+        if (x.style.display != "block") {
+          var table = document.getElementsByClassName("add tbody")[1];
+          var rowCount = table.rows.length;
+          for (var i = rowCount - 1; i >= 0; i--) {
+            table.deleteRow(i);
+          }
+          var table = document.getElementsByClassName("add tbody")[0];
+          var rowCount = table.rows.length;
+          for (var i = rowCount - 1; i >= 0; i--) {
+            table.deleteRow(i);
+          }
+          if (suggested_words[0] != "") {
+            suggested_words.forEach(function (currentValue) {
+              var row = table.insertRow();
+              var cell1 = row.insertCell();
+              cell1.innerHTML =
+                currentValue +
+                "<button type='button' onclick='addWord(this.parentElement.textContent, true)'>+</button>";
+            });
+          }
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      };
+
+      function deleteWordFromTopic() {
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+
+        if (!document.querySelector("#topic_detail tbody .active").draggable) {
+          alert("Please use undo feature to remove previously edited step.");
+          return;
+        }
+
+        var selected_word = document.querySelector(
+          "#topic_detail tbody .active"
+        ).cells[0].innerHTML;
+        var selected_index = selected_topic.words.indexOf(selected_word);
+        selected_topic.remove_words.push(selected_topic.words[selected_index]);
+        selected_topic.remove_words = [...new Set(selected_topic.remove_words)];
+        selected_topic.words.splice(selected_index, 1);
+        selected_topic.words_weight.splice(selected_index, 1);
+        selected_topic.words_edited.splice(selected_index, 1);
+
+        refine_history.push({
+          step:
+            "DeleteWord: " + selected_topic.name + '. "' + selected_word + '"',
+          topics: $.extend(true, [], topic_list),
+        });
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadSelectedTopic();
+        updateRefinementHistory();
+        console.log("delete_word");
+        console.log(topic_list);
+      }
+
+      function allowDrop(ev) {
+        ev.preventDefault();
+      }
+
+      function drag_topicWord(ev) {
+        // ev.dataTransfer.setData("text", ev.target.rowIndex);
+        ev.dataTransfer.setData("sourceWord", ev.target.cells[0].innerHTML);
+        ev.dataTransfer.setData("sourceWeight", ev.target.cells[2].innerHTML);
+        ev.dataTransfer.setData("rowIndex", ev.target.rowIndex);
+        var current = document.querySelectorAll("#topic_words tbody .active");
+        if (current.length > 0) {
+          for (i = 0; i < current.length; i++) {
+            current[i].className = current[i].className.replace(" active", "");
+          }
+        }
+        ev.target.className += " active";
+      }
+
+      function drop_topicWord(ev) {
+        ev.preventDefault();
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+
+        var rows = document.querySelectorAll("#topic_words tbody tr");
+        var targetElement = ev.target.parentElement;
+        if (!targetElement.cells)
+          targetElement = ev.target.parentElement.parentElement;
+
+        // if (targetElement.cells[0].className != "topic_words")
+        //   alert("Debug error: drop_topicWord.");
+        // if (targetElement.cells[2].innerHTML == "?") return;
+
+        var source_rIndex = ev.dataTransfer.getData("rowIndex");
+        var target_rIndex = targetElement.rowIndex;
+        var source_word = ev.dataTransfer.getData("sourceWord");
+        var target_word = targetElement.cells[0].innerHTML;
+        var source_weight = ev.dataTransfer.getData("sourceWeight");
+        var target_weight = targetElement.cells[2].innerHTML;
+        var source_wIndex = selected_topic.words.indexOf(source_word);
+        var target_wIndex = selected_topic.words.indexOf(target_word);
+
+        if (source_wIndex != target_wIndex) {
+          if (targetElement.cells[0].className != "topic_words")
+            alert("Debug error: drop_topicWord.");
+          if (selected_topic.words_edited[target_wIndex] == true) return;
+
+          selected_topic.words[target_wIndex] = source_word;
+          selected_topic.words_weight[target_wIndex] = source_weight;
+          selected_topic.words_edited[target_wIndex] = true;
+          selected_topic.words[source_wIndex] = target_word;
+          selected_topic.words_weight[source_wIndex] = target_weight;
+          selected_topic.words_edited[source_wIndex] = true;
+
+          rows[source_rIndex - 1].draggable = false;
+          rows[target_rIndex - 1].draggable = false;
+          rows[source_rIndex - 1].className = "edited";
+          rows[target_rIndex - 1].className = "edited";
+          var source_innerHTML = rows[source_rIndex - 1].innerHTML;
+          var target_innerHTML = rows[target_rIndex - 1].innerHTML;
+          rows[target_rIndex - 1].innerHTML = source_innerHTML;
+          rows[source_rIndex - 1].innerHTML = target_innerHTML;
+          rows[target_rIndex - 1].className += " active";
+          rows[source_rIndex - 1].className = rows[
+            source_rIndex - 1
+          ].className.replace(" active", "");
+
+          if (source_wIndex != target_wIndex) {
+            if (target_weight >= source_weight)
+              refine_history.push({
+                step:
+                  "ReorderWords: " +
+                  selected_topic.name +
+                  '. "' +
+                  target_word +
+                  "," +
+                  source_word +
+                  '"',
+                topics: $.extend(true, [], topic_list),
+              });
+            else if (target_weight < source_weight)
+              refine_history.push({
+                step:
+                  "ReorderWords: " +
+                  selected_topic.name +
+                  '. "' +
+                  source_word +
+                  "," +
+                  target_word +
+                  '"',
+                topics: $.extend(true, [], topic_list),
+              });
+            // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+            // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+            updateRefinementHistory();
+            console.log("swap_word");
+            console.log(topic_list);
+          }
+        }
+      }
+
+      // code for document level operations
+
+      function setTitleAndAbstract(rowIndex) {
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        var selected_doc = document.querySelector(
+          "#docs_list tbody .active"
+        ).rowIndex;
+        var y = document.getElementById("doc_title");
+        y.value = selected_topic.docs_author[selected_doc - 1];
+        y = document.getElementById("doc_abstract");
+        y.value = selected_topic.docs_body[selected_doc - 1];
+      }
+
+      function showDocDetail() {
+        var x = document.getElementById("doc_detail");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+
+      function deleteDoc() {
+        var selected_topic = getSelectedTopic(
+          document
+            .querySelector("#topics_table tbody .active")
+            .getElementsByTagName("td")[0].innerHTML
+        );
+        var activated = document.querySelector("#docs_list tbody .active");
+        if (!activated) return;
+
+        var selected_doc = document.querySelector(
+          "#docs_list tbody .active"
+        ).rowIndex;
+        selected_topic.remove_documents.push(
+          selected_topic.docs_id[selected_doc - 1]
+        );
+        selected_topic.docs_title.splice(selected_doc - 1, 1);
+        selected_topic.docs_author.splice(selected_doc - 1, 1);
+        selected_topic.docs_id.splice(selected_doc - 1, 1);
+        selected_topic.docs_body.splice(selected_doc - 1, 1);
+        selected_topic.docs_weight.splice(selected_doc - 1, 1);
+
+        refine_history.push({
+          step:
+            "DeleteDoc: " +
+            selected_topic.name +
+            '. "' +
+            selected_topic.remove_documents[
+              selected_topic.remove_documents.length - 1
+            ] +
+            '"',
+          topics: $.extend(true, [], topic_list),
+        });
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadSelectedTopic();
+        updateRefinementHistory();
+        console.log("delete_doc");
+        console.log(topic_list);
+      }
+
+      function updateRefinementHistory() {
+        var history = document.querySelector("#refinement_records .nested");
+        var stepCount = history.childElementCount;
+        for (var i = stepCount - 1; i >= 0; i--) {
+          history.removeChild(history.children[i]);
+        }
+
+        for (var i = 0; i < refine_history.length; i++) {
+          var li = document.createElement("li");
+          li.appendChild(
+            document.createTextNode(i + 1 + ". " + refine_history[i].step)
+          );
+          // li.addEventListener("click", function () {
+          //   var x = document.getElementById("topic_panel");
+          //   x.style.display = "none";
+
+          //   var current = document.querySelectorAll(
+          //     "#refine_history .nested li"
+          //   );
+          //   for (i = 0; i < current.length; i++) {
+          //     current[i].className = current[i].className.replace("active", "");
+          //   }
+          //   this.className += "active";
+          //   selected_li = Array.prototype.indexOf.call(history.children, this);
+          //   topic_list = $.extend(true, [], refine_history[selected_li].topics);
+          //   loadTopicList();
+          //   if (read_only || selected_li != current.length - 1) {
+          //     $(":button").prop("disabled", true);
+          //     $("#view_button").prop("disabled", false);
+          //     $("#topic_detail #back").prop("disabled", false);
+          //   } else {
+          //     $(":button").prop("disabled", false);
+          //   }
+
+          //   var activated = document.querySelectorAll(
+          //     "#refine_history .nested .active"
+          //   )[0];
+          //   if (
+          //     read_only ||
+          //     parseInt(activated.innerHTML.split(".")[0]) == 1 ||
+          //     parseInt(activated.innerHTML.split(".")[0]) !=
+          //       history.childElementCount
+          //   ) {
+          //     var x = document.getElementById("undo_refinements");
+          //     x.style.display = "none";
+          //   } else {
+          //     var x = document.getElementById("undo_refinements");
+          //     x.style.display = "block";
+          //   }
+          // });
+          history.appendChild(li);
+        }
+        history.children[history.childElementCount - 1].className += "active";
+
+        var activated = document.querySelectorAll(
+          "#refine_history .nested .active"
+        )[0];
+        if (
+          read_only ||
+          parseInt(activated.innerHTML.split(".")[0]) == 1 ||
+          parseInt(activated.innerHTML.split(".")[0]) !=
+            history.childElementCount
+        ) {
+          var x = document.getElementById("undo_refinements");
+          x.style.display = "none";
+        } else {
+          var x = document.getElementById("undo_refinements");
+          x.style.display = "block";
+        }
+      }
+
+      function refinement_undo() {
+        if (refine_history.length <= 1) {
+          alert("No refinement to undo!");
+          return;
+        }
+        refine_history.splice(-1, 1);
+        topic_list = $.extend(
+          true,
+          [],
+          refine_history[refine_history.length - 1].topics
+        );
+        // sessionStorage.setItem('topic_list', JSON.stringify(topic_list));
+        // sessionStorage.setItem('refine_history', JSON.stringify(refine_history));
+        loadTopicList();
+        if (view_topic != "") loadSelectedTopic();
+        updateRefinementHistory();
+        console.log("undo");
+        console.log(topic_list);
+      }
+
+      var selected_model;
+
+      function refinement_apply() {
+        console.log(canvas_nodes);
+        if (refine_history.length <= 1) {
+          alert("No refinements added yet!");
+          return;
+        }
+
+        model_name = "model" + (canvas_nodes.length + 1);
+        var params = {
+          stage: "refine model",
+          iters: iters,
+          current: model_name,
+          target: selected_model.name,
+          refine_history: refine_history.map((data) => data.step),
+        };
+        $.ajax({
+          type: "POST",
+          url: MODEL_API_ADDRESS,
+          data: JSON.stringify(params),
+          success: function (data) {
+            if (data.progress >= 0) {
+              $(":button").prop("disabled", true);
+              $("#view_button").prop("disabled", false);
+              $("#back").prop("disabled", false);
+              $("#doc_view").prop("disabled", false);
+              $("#doc_view_cancel").prop("disabled", false);
+              c.removeEventListener("mousemove", canvas_mousemove);
+              c.removeEventListener("click", canvas_click);
+              console.log("success");
+              var x = document.getElementsByClassName("progress_bar")[0];
+              x.style.display = "block";
+              progressBar.value = 1;
+              progressBar.getElementsByTagName("span")[0].textContent = 1;
+              requestAnimationFrame(updateProgress);
+            } else {
+              alert(
+                "There is already a model being trained on the background. Please contact the manager to solve the issue!"
+              );
+              console.log(xhr, options, err);
+            }
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log(xhr, options, err);
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      // display inter-topic map
+      function drawTopicCircles() {
+        console.log("topic_list", topic_list);
+        var topic_list_temp = topic_list.filter(function (d) {
+          return d["new_topic"] == false;
+        });
+        console.log("topic_list", topic_list_temp);
+        var circles = topic_list_temp.map(function (d) {
+          return d["coordinate"];
+        });
+        var xrange = circles.map(function (d) {
+          return d["x"];
+        });
+        var yrange = circles.map(function (d) {
+          return d["y"];
+        });
+        var xmax = Math.max.apply(null, xrange);
+        var xmin = Math.min.apply(null, xrange);
+        var ymax = Math.max.apply(null, yrange);
+        var ymin = Math.min.apply(null, yrange);
+
+        d3.select(".mycircle").selectAll("*").remove();
+        d3.select(".mycircle")
+          .selectAll("#topicindex")
+          .data(topic_list_temp)
+          .enter()
+          .append("text")
+          .attr("x", function (d) {
+            var v =
+              ((0.9 * (d.coordinate.x - xmin)) / (xmax - xmin) + 0.05) * 100;
+            return parseFloat(v).toFixed(2) + "%";
+          })
+          .attr("y", function (d) {
+            var v =
+              ((0.9 * (d.coordinate.y - ymin)) / (ymax - ymin) + 0.05) * 100;
+            return parseFloat(v).toFixed(2) + "%";
+          })
+          .attr("opacity", "1")
+          .attr("style", "text-anchor: middle; font-size: 12px;")
+          .text(function (d) {
+            if (!(d.new_topic && d.split)) return d.name;
+          });
+        d3.select(".mycircle")
+          .selectAll(".dot")
+          .data(topic_list_temp)
+          .enter()
+          .append("circle")
+          .attr("id", function (d) {
+            return (
+              "dot_" +
+              stringToID(
+                d.name.replace(/\s/g, "").replaceAll("+", "_").toLowerCase()
+              )
+            );
+          })
+          .attr("cx", function (d) {
+            var v =
+              ((0.9 * (d.coordinate.x - xmin)) / (xmax - xmin) + 0.05) * 100;
+            return parseFloat(v).toFixed(2) + "%";
+          })
+          .attr("cy", function (d) {
+            var v =
+              ((0.9 * (d.coordinate.y - ymin)) / (ymax - ymin) + 0.05) * 100;
+            return parseFloat(v).toFixed(2) + "%";
+          })
+          .attr("r", function (d) {
+            var r = Math.sqrt(Math.max(parseFloat(d.weight), 0.5) / 100) * 25;
+            return parseFloat(r).toFixed(2) + "%";
+          })
+          .attr("style", function (d) {
+            if (d.new_topic && d.split) return "opacity: 0.0;";
+            else if (d.keep) return "opacity: 0.2; fill: rgb(31, 119, 180);";
+            else return "opacity: 0.1; fill: rgb(0, 0, 0);";
+          })
+          .on("mouseover", function (e, d) {
+            if (d.new_topic && d.split) {
+              d3.select(this).attr(
+                "style",
+                "opacity: 0.0; fill: rgb(255, 0, 0);"
+              );
+              d3.select("#topic_" + this.id.substring(4)).style(
+                "background-color",
+                "rgb(255, 0, 0, 0.0)"
+              );
+            } else {
+              d3.select(this).attr(
+                "style",
+                "opacity: 0.2; fill: rgb(255, 0, 0);"
+              );
+              d3.select("#topic_" + this.id.substring(4)).style(
+                "background-color",
+                "rgb(255, 0, 0, 0.2)"
+              );
+            }
+          })
+          .on("mouseout", function (e, d) {
+            if (this.className.baseVal == "active") {
+              d3.select(this).attr(
+                "style",
+                "opacity: 0.3; fill: rgb(255, 0, 0);"
+              );
+            } else {
+              if (d.new_topic && d.split)
+                d3.select(this).attr("style", "opacity: 0.0;");
+              else if (d.keep)
+                d3.select(this).attr(
+                  "style",
+                  "opacity: 0.2; fill: rgb(31, 119, 180);"
+                );
+              else
+                d3.select(this).attr(
+                  "style",
+                  "opacity: 0.1; fill: rgb(0, 0, 0);"
+                );
+            }
+            d3.select("#topic_" + this.id.substring(4)).style(
+              "background-color",
+              ""
+            );
+          })
+          .on("click", function (e, d) {
+            if (this.className.baseVal == "active") {
+              d3.select("#topic_" + this.id.substring(4)).attr("class", "");
+              d3.select(this).attr("class", "");
+            } else {
+              if (d.keep && !d.new_topic) {
+                d3.select("#topic_" + this.id.substring(4)).attr(
+                  "class",
+                  " active"
+                );
+                d3.select(this).attr("class", "active");
+              }
+            }
+          });
+      }
+
+      function refreshCircles() {
+        var circles = document.querySelectorAll(".mycircle circle"),
+          i;
+        for (i = 0; i < circles.length; i++) {
+          if (circles[i].className.baseVal == "active") {
+            circles[i].className.baseVal = "";
+            circles[i].style.fill = "rgb(31, 119, 180)";
+            circles[i].style.opacity = "0.2";
+          }
+        }
+      }
+
+      function drawArrowhead(locx, locy, angle, sizex, sizey) {
+        var hx = sizex / 2;
+        var hy = sizey / 2;
+
+        ctx.translate(locx, locy);
+        ctx.rotate(angle);
+        ctx.translate(-hx, -hy);
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, 1 * sizey);
+        ctx.lineTo(1 * sizex, 1 * hy);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // returns radians
+      function findAngle(sx, sy, ex, ey) {
+        // make sx and sy at the zero point
+        return Math.atan2(ey - sy, ex - sx);
+      }
+
+      function drawLine(sx, sy, ex, ey, mx, my, element, mode) {
+        var xPosDiffers = sx != ex,
+          yPosDiffers = sy != ey,
+          lineWidth,
+          lineColor;
+
+        if (selected_model == element && element.select_node) {
+          lineWidth = 4;
+          lineColor = "#ccc";
+        } else if (selected_model == element && element.select_line) {
+          lineWidth = 8;
+          lineColor = "rgb(255, 0, 0, 0.3)";
+        } else {
+          lineWidth = 4;
+          lineColor = "#ccc";
+        }
+
+        ctx.save();
+
+        if (xPosDiffers || yPosDiffers) {
+          var mouseon = sx - 5 <= mx && mx <= sx + 5 && my >= sy && my <= ey;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
+          ctx.lineWidth = mouseon ? 8 : lineWidth;
+          ctx.strokeStyle = mouseon ? "rgb(255, 0, 0, 0.3)" : lineColor;
+          ctx.stroke();
+          ctx.closePath();
+
+          if (mode == "click" && mouseon) {
+            selected_model = element;
+            element.select_node = false;
+            element.select_line = true;
+            loadSelectedRefineHistory(element);
+          }
+        }
+
+        ctx.restore();
+      }
+
+      function loadSelectedModel(element) {
+        read_only = false;
+
+        var x = document.getElementById("topic_panel");
+        x.style.display = "none";
+
+        var x = document.getElementById("undo_refinements");
+        x.style.display = "none";
+
+        topic_list = $.extend(true, [], element.topics);
+        refine_history = [];
+        refine_history.push({
+          step: "Original",
+          topics: $.extend(true, [], topic_list),
+        });
+
+        var model_title = document
+          .getElementById("topics_list")
+          .getElementsByTagName("p")[0];
+        model_title.innerHTML = element.name + " Detail";
+
+        var refine_title = document
+          .getElementById("refine_history")
+          .getElementsByTagName("p")[0];
+        refine_title.innerHTML = element.name + " Pending Refinements: ";
+
+        loadTopicList();
+        updateRefinementHistory();
+
+        var refine_li = document.querySelectorAll("#refine_history .nested li");
+        for (i = 0; i < refine_li.length; i++) {
+          refine_li[i].className = refine_li[i].className.replace("active", "");
+        }
+        refine_li[0].className += "active";
+
+        if (!read_only) $(":button").prop("disabled", false);
+      }
+
+      function loadSelectedRefineHistory(element) {
+        read_only = true;
+
+        refine_history = element.refine_history;
+        topic_list = $.extend(true, [], refine_history[0].topics);
+
+        var model_title = document
+          .getElementById("topics_list")
+          .getElementsByTagName("p")[0];
+        model_title.innerHTML = element.parent + " Detail";
+
+        var refine_title = document
+          .getElementById("refine_history")
+          .getElementsByTagName("p")[0];
+        refine_title.innerHTML =
+          "Refinements History: " + element.parent + " to " + element.name;
+
+        loadTopicList();
+        updateRefinementHistory();
+
+        var refine_li = document.querySelectorAll("#refine_history .nested li");
+        for (i = 0; i < refine_li.length; i++) {
+          refine_li[i].className = refine_li[i].className.replace("active", "");
+        }
+        refine_li[0].className += "active";
+
+        if (read_only) {
+          $(":button").prop("disabled", true);
+          $("#view_button").prop("disabled", false);
+          $("#topic_detail #back").prop("disabled", false);
+          $("#doc_view").prop("disabled", false);
+          $("#doc_view_cancel").prop("disabled", false);
+        }
+      }
+
+      function drawBranch(sx, sy, ex, ey, mx, my, element, mode) {
+        var nodeText = element.name,
+          ishead = element.head,
+          xPosDiffers = sx != ex,
+          yPosDiffers = sy != ey,
+          rectW = 9 * nodeText.length,
+          rectH = 18,
+          lineWidth,
+          nodeColor;
+
+        if (selected_model == element && element.select_node) {
+          (lineWidth = 4), (nodeColor = "rgb(255, 0, 0, 0.3)");
+          lineColor = "#ccc";
+        } else if (selected_model == element && element.select_line) {
+          lineWidth = 8;
+          nodeColor = "rgb(31, 119, 180, 0.2)";
+          lineColor = "rgb(255, 0, 0, 0.3)";
+        } else {
+          lineWidth = 4;
+          nodeColor = "rgb(31, 119, 180, 0.2)";
+          lineColor = "#ccc";
+        }
+
+        if (ishead) {
+          var mouseon =
+            sx - rectW / 2 <= mx &&
+            mx <= sx + rectW / 2 &&
+            my >= sy - rectH / 2 &&
+            my <= sy + rectH / 2;
+          ctx.fillStyle = mouseon ? "rgb(255, 0, 0, 0.2)" : nodeColor;
+          ctx.fillRect(sx - rectW / 2, sy - rectH / 2, rectW, rectH);
+          ctx.fillStyle = "black";
+          ctx.font = "16px Times New Roman";
+          ctx.fillText(nodeText, sx - rectW / 2 + 2, sy + 6);
+
+          if (mode == "click" && mouseon) {
+            selected_model = element;
+            element.select_node = true;
+            element.select_line = false;
+            loadSelectedModel(element);
+          }
+        } else {
+          ctx.save();
+          if (xPosDiffers && yPosDiffers) {
+            // both x and y coordinates differ, let's go with a bezier curve
+            var w = (ey - 20 - sy - rectH / 2) / 2;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy + rectH / 2);
+            ctx.bezierCurveTo(
+              sx,
+              sy + rectH / 2 + w,
+              ex,
+              ey - 20 - w,
+              ex,
+              ey - 20
+            );
+            ctx.lineWidth = ctx.isPointInStroke(mx, my) ? 8 : lineWidth;
+            ctx.strokeStyle = ctx.isPointInStroke(mx, my)
+              ? "rgb(255, 0, 0, 0.3)"
+              : lineColor;
+            ctx.stroke();
+            ctx.closePath();
+
+            if (mode == "click" && ctx.isPointInStroke(mx, my)) {
+              selected_model = element;
+              element.select_node = false;
+              element.select_line = true;
+              loadSelectedRefineHistory(element);
+            }
+
+            var ang = findAngle(ex, ey - 14 - w, ex, ey - 14);
+            drawArrowhead(ex, ey - 14, ang, 12, 12);
+          } else if (
+            (xPosDiffers && !yPosDiffers) ||
+            (!xPosDiffers && yPosDiffers)
+          ) {
+            // only the x position differs, let's draw a straight line
+            drawLine(sx, sy + rectH / 2, ex, ey - 20, mx, my, element, mode);
+            var ang = findAngle(sx, sy + rectH / 2, ex, ey - 14);
+            drawArrowhead(ex, ey - 14, ang, 12, 12);
+          }
+          ctx.restore();
+
+          if (xPosDiffers || yPosDiffers) {
+            var mouseon =
+              ex - rectW / 2 <= mx &&
+              mx <= ex + rectW / 2 &&
+              my >= ey - rectH / 2 &&
+              my <= ey + rectH / 2;
+            ctx.fillStyle = mouseon ? "rgb(255, 0, 0, 0.2)" : nodeColor;
+            ctx.fillRect(ex - rectW / 2, ey - rectH / 2, rectW, rectH);
+            ctx.fillStyle = "black";
+            ctx.font = "16px Times New Roman";
+            ctx.fillText(nodeText, ex - rectW / 2 + 2, ey + 6);
+
+            if (mode == "click" && mouseon) {
+              selected_model = element;
+              element.select_node = true;
+              element.select_line = false;
+              loadSelectedModel(element);
+            }
+          }
+        }
+      }
+
+      // Draw a few "hello world" tests
+      var c = document.getElementById("canvas1");
+      var ctx = c.getContext("2d");
+
+      function updateModelHistoryTree() {
+        var exrange = canvas_nodes.map(function (d) {
+          return d.ex;
+        });
+        var exmax = Math.max.apply(null, exrange);
+        var eyrange = canvas_nodes.map(function (d) {
+          return d.ey;
+        });
+        var eymax = Math.max.apply(null, eyrange);
+
+        if (eymax + 50 < 200) {
+          c.height = 200;
+        } else {
+          c.height = eymax + 50;
+        }
+        if (exmax + 50 < 250) {
+          c.width = 250;
+        } else {
+          c.width = exmax + 100;
+        }
+        ctx.clearRect(0, 0, c.width, c.height);
+        canvas_nodes.reverse().forEach(function (currentValue) {
+          ctx.strokeStyle = "#ccc";
+          drawBranch(
+            currentValue.sx,
+            currentValue.sy,
+            currentValue.ex,
+            currentValue.ey,
+            -1,
+            -1,
+            currentValue,
+            "None"
+          );
+        });
+        canvas_nodes.reverse();
+
+        c.addEventListener("mousemove", canvas_mousemove);
+        c.addEventListener("click", canvas_click);
+      }
+
+      function canvas_mousemove(e) {
+        // important: correct mouse position:
+        var rect = this.getBoundingClientRect(),
+          x = e.clientX - rect.left,
+          y = e.clientY - rect.top,
+          i = 0,
+          r;
+        ctx.clearRect(0, 0, c.width, c.height);
+        canvas_nodes.forEach(function (currentValue) {
+          ctx.strokeStyle = "#ccc";
+          drawBranch(
+            currentValue.sx,
+            currentValue.sy,
+            currentValue.ex,
+            currentValue.ey,
+            x,
+            y,
+            currentValue,
+            "mousemove"
+          );
+        });
+      }
+
+      function canvas_click(e) {
+        var rect = this.getBoundingClientRect(),
+          x = e.clientX - rect.left,
+          y = e.clientY - rect.top,
+          i = 0,
+          r;
+        ctx.clearRect(0, 0, c.width, c.height);
+        canvas_nodes.forEach(function (currentValue) {
+          ctx.strokeStyle = "#ccc";
+          drawBranch(
+            currentValue.sx,
+            currentValue.sy,
+            currentValue.ex,
+            currentValue.ey,
+            x,
+            y,
+            currentValue,
+            "click"
+          );
+        });
+        console.log(selected_model);
+      }
+
+      // c.addEventListener("mousemove", canvas_mousemove);
+      // c.addEventListener("click", canvas_click);
+
+      function wordRangeSlide(value) {
+        document.getElementById("word_lambdaValue").innerHTML = value;
+      }
+
+      function docRangeSlide(value) {
+        document.getElementById("doc_lambdaValue").innerHTML = value;
+      }
+
+      var progressBar = document.getElementById("progress_p");
+
+      function updateProgress(newValue) {
+        var params = {
+          stage: "update progress bar", // initilize, refine, update
+          iters: iters,
+          name: model_name,
+        };
+        if (progressBar.value < 90) {
+          $.ajax({
+            type: "POST",
+            url: MODEL_API_ADDRESS,
+            data: JSON.stringify(params),
+            success: function (data) {
+              setTimeout(() => {
+                progressBar.value = Math.max(1, data.progress);
+                progressBar.getElementsByTagName("span")[0].textContent =
+                  Math.max(1, data.value);
+                requestAnimationFrame(updateProgress);
+              }, 500);
+            },
+            error: function (xhr, options, err) {
+              alert("error!");
+              console.log("error");
+            },
+            timout: 1000,
+            dataType: "json",
+          });
+        } else if (progressBar.value < 100) {
+          var beta = 0.5;
+          console.log(beta);
+          $.ajax({
+            type: "GET",
+            url: QE_API_ADDRESS + "&dump=" + model_name + "&beta=" + beta,
+            success: function (data) {
+              console.log(data);
+              progressBar.value = 100;
+              progressBar.getElementsByTagName("span")[0].textContent = 100;
+              requestAnimationFrame(updateProgress);
+            },
+            error: function (xhr, options, err) {
+              alert("error!");
+              console.log("error");
+            },
+            timout: 1000,
+            dataType: "json",
+          });
+        } else {
+          $.ajax({
+            url: QE_API_ADDRESS + "&view=" + model_name,
+            success: function (topics) {
+              var offset = 0,
+                previous_offset = -1,
+                i;
+
+              var newModel = {
+                name: model_name,
+                parent: selected_model.name,
+                topics: topics,
+                refine_history: refine_history,
+                sx: 0,
+                sy: 0,
+                ex: 0,
+                ey: 0,
+                select_node: true,
+                select_line: false,
+                head: true,
+              };
+
+              while (previous_offset != offset) {
+                previous_offset = offset;
+                for (i = 0; i < canvas_nodes.length; i++) {
+                  if (
+                    canvas_nodes[i].ey == selected_model.ey + 100 &&
+                    canvas_nodes[i].ex == selected_model.ex + offset * 100
+                  ) {
+                    offset += 1;
+                  }
+                }
+              }
+
+              newModel.name = "model" + (canvas_nodes.length + 1);
+              (newModel.parent = selected_model.name),
+                (newModel.sx = selected_model.ex);
+              newModel.sy = selected_model.ey;
+              newModel.ex = selected_model.ex + offset * 100;
+              newModel.ey = selected_model.ey + 100;
+              newModel.select_node = true;
+              newModel.select_line = false;
+              newModel.head = false;
+
+              canvas_nodes.push(newModel);
+              refine_history = [];
+              selected_model = canvas_nodes[canvas_nodes.length - 1];
+
+              c.addEventListener("mousemove", canvas_mousemove);
+              c.addEventListener("click", canvas_click);
+
+              dumpCanvas(canvas_nodes);
+              updateModelHistoryTree();
+              loadSelectedModel(selected_model);
+              console.log("refinement_apply");
+
+              var x = document.getElementsByClassName("progress_bar")[0];
+              x.style.display = "none";
+            },
+            error: function (xhr, options, err) {
+              alert("error!");
+              console.log("error");
+            },
+            timout: 1000,
+            dataType: "json",
+          });
+        }
+      }
+
+      function stringToID(str) {
+        var i,
+          output = "";
+        for (i = 0; i < str.length; i++) {
+          output += str.charCodeAt(i);
+        }
+        return output;
+      }
+
+      var read_only = false;
+      var editable_step = true;
+      var editable_model = true;
+      var view_topic = "";
+      // var refine_history = sessionStorage.getItem('refine_history') ? JSON.parse(sessionStorage.getItem(
+      //     'refine_history')) : [];
+      // var model_history = sessionStorage.getItem('model_history') ? JSON.parse(sessionStorage.getItem(
+      //     'model_history')) : [];
+      // var topic_list = sessionStorage.getItem('topic_list') ? JSON.parse(sessionStorage.getItem(
+      //         'topic_list')) :
+      //         getModel();
+
+      var toggler = document.getElementsByClassName("caret");
+      for (var i = 0; i < toggler.length; i++) {
+        toggler[i].addEventListener("click", function () {
+          this.parentElement
+            .querySelector(".nested")
+            .classList.toggle("active");
+          this.classList.toggle("caret-down");
+        });
+      }
+
+      // var start_model = getModelFromServer("");
+      var start_model, canvas_nodes;
+      var start_x = 100,
+        start_y = 50,
+        node_z = 50;
+      var params = {
+        stage: "loadCanvas",
+      };
+      $.ajax({
+        type: "POST",
+        url: QE_API_ADDRESS,
+        data: JSON.stringify(params, null, 4),
+        success: function (data) {
+          console.log("success");
+          canvas_nodes = data.canvas_nodes;
+          selected_model = canvas_nodes[0];
+          loadPage();
+        },
+        error: function (xhr, options, err) {
+          alert("server not connected!");
+          console.log("error");
+        },
+        timout: 1000,
+        dataType: "json",
+        contentType: "application/json",
+      });
+
+      function loadPage() {
+        updateModelHistoryTree();
+        loadSelectedModel(selected_model);
+      }
+
+      // dumpCanvas();
+      function dumpCanvas(canvas_nodes) {
+        var params = {
+          stage: "dumpCanvas",
+          canvas_nodes: canvas_nodes,
+        };
+        $.ajax({
+          type: "POST",
+          url: QE_API_ADDRESS,
+          data: JSON.stringify(params, null, 4),
+          success: function (data) {
+            console.log("success");
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+          contentType: "application/json",
+        });
+      }
+
+      function selectFolder(e) {
+        var theFiles = e.target.files;
+        var data = new FormData();
+        for (var i = 0; i < theFiles.length; i++) {
+          data.append("file", theFiles[i]);
+        }
+        console.log(data.get("file"));
+        $body = $("body");
+        $body.addClass("loading");
+        $.ajax({
+          type: "POST",
+          url: QE_API_ADDRESS,
+          // cache: false,
+          contentType: false,
+          processData: false,
+          data: data,
+          success: function (data) {
+            console.log("success");
+            $body.removeClass("loading");
+            canvas_nodes = data.canvas_nodes;
+            selected_model = canvas_nodes[0];
+            loadPage();
+            alert("load models success");
+          },
+          error: function (xhr, options, err) {
+            $body.removeClass("loading");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      function download() {
+        $body = $("body");
+        $body.addClass("loading");
+        $.ajax({
+          type: "GET",
+          url: QE_API_ADDRESS + "&download",
+          success: function (data) {
+            console.log(data);
+            $body.removeClass("loading");
+            filename = data + ".zip";
+            // var pom = document.createElement("a");
+            // pom.setAttribute("href", "http://localhost/" + filename);
+            // pom.setAttribute("download", filename);
+            if (document.createEvent) {
+              console.log("download if");
+              var event = document.createEvent("MouseEvents");
+              event.initEvent("click", true, true);
+              // pom.dispatchEvent(event);
+            } else {
+              console.log("download else");
+              pom.click();
+            }
+            // removeZip();
+            alert("download models success");
+          },
+          error: function (xhr, options, err) {
+            $body.removeClass("loading");
+            alert("download error!");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      function removeZip() {
+        $.ajax({
+          type: "GET",
+          url: QE_API_ADDRESS + "&removezip",
+          success: function (data) {
+            console.log(data + " removed.");
+          },
+          error: function (xhr, options, err) {
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      $("#canvas1").unbind();
+
+      var beta = 0.5;
+      console.log(beta + "asdada");
+    </script>
+  </body>
+</html>

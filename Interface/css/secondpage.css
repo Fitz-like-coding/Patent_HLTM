@@ -1,0 +1,958 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 18px;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color: black;
+  height: 800px;
+  width: 1536px;
+  margin: 1.5% auto;
+  /* border: 1px solid black; */
+}
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8) url("http://i.stack.imgur.com/FhHRx.gif")
+    50% 50% no-repeat;
+}
+
+/* When the body has the loading class, we turn
+  the scrollbar off with overflow:hidden */
+body.loading .modal {
+  overflow: hidden;
+}
+
+/* Anytime the body has the loading class, our
+  modal element will be visible */
+body.loading .modal {
+  display: block;
+}
+
+/* ::-webkit-scrollbar { */
+/* display: none; */
+/* } */
+
+#history_panel {
+  width: 33%;
+  height: 600px;
+  position: relative;
+  float: left;
+  top: 100px;
+  border-left: 1px solid black;
+}
+
+#model_history_block {
+  display: none;
+  width: 100%;
+  height: 60%;
+  position: absolute;
+  float: top;
+  border-top: 1px solid black;
+  background-color: white;
+  z-index: 1;
+}
+
+#model_history {
+  width: 100%;
+  height: 60%;
+  position: relative;
+  float: top;
+  border-top: 1px solid black;
+}
+
+#model_history .nested li:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+#model_history .nested li.active {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+#model_history button {
+  height: 25px;
+  width: 120px;
+}
+
+#model_history #save_model {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+
+#model_history #load_model {
+  position: absolute;
+  right: 150px;
+  top: 20px;
+}
+
+#model_history #new_branch {
+  position: absolute;
+  left: 20px;
+  bottom: 10px;
+}
+
+#canvas_div {
+  position: absolute;
+  top: 50px;
+  width: 100%;
+  height: 310px;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  background: #fff;
+  border: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+#refine_history {
+  width: 100%;
+  height: 40%;
+  position: relative;
+  float: top;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+}
+
+#refine_history p {
+  width: 90%;
+  position: relative;
+  float: top;
+}
+
+#refine_history .nested li:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+#refine_history .nested li.active {
+  background: rgb(255, 0, 0, 0.3);
+}
+
+/* Remove default bullets */
+ul,
+#refinement_records {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#refinement_records {
+  /* margin: 0;
+    padding: 0; */
+  font-size: 14px;
+  position: relative;
+  top: 30px;
+  padding-left: 10px;
+  float: none;
+  height: 150px;
+  overflow: auto;
+  border: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.1);
+  /* float: top; */
+}
+
+#refine_history #undo_refinements {
+  display: none;
+  position: absolute;
+  height: 25px;
+  width: 80px;
+  right: 20px;
+  bottom: 5px;
+}
+
+/* Style the caret/arrow */
+#refinement_records .caret {
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+#refinement_records .caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+#refinement_records .caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+#refinement_records .nested {
+  display: none;
+  padding-left: 40px;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+#refinement_records .active {
+  display: block;
+}
+
+#history_panel p {
+  position: relative;
+  top: 20px;
+  left: 10px;
+}
+
+#model_panel {
+  width: 67%;
+  height: 600px;
+  position: relative;
+  float: left;
+  top: 100px;
+  /* border: 1px solid black; */
+}
+
+#model_panel p {
+  position: relative;
+  top: 20px;
+  left: 10px;
+}
+
+#view_button {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  right: 130px;
+}
+
+#merge_button {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  right: 70px;
+}
+
+#split_button {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  right: 10px;
+}
+
+#topics_table {
+  position: relative;
+  top: 20px;
+  font-size: 12px;
+  width: 100%;
+}
+
+#topics_table thead {
+  display: block;
+}
+
+#topics_table th {
+  font-weight: bold;
+  text-align: left;
+  color: rgb(0, 0, 0);
+  opacity: 1;
+  height: 35px;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  padding-left: 10px;
+}
+
+#topics_table .topic_index {
+  width: 80px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table .topic_words {
+  width: 320px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table .topic_weight_weightbar {
+  width: 100px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table .topic_weight {
+  width: 45px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table .topic_weight_bar {
+  width: 50px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table td {
+  padding-left: 10px;
+  height: 35px;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topics_table tbody .topic_words {
+  word-spacing: 10px;
+  font-style: italic;
+}
+
+#topics_table tbody {
+  display: block;
+  height: 446px;
+  overflow: auto;
+}
+
+#topics_list {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  float: left;
+  border: 1px solid black;
+}
+
+/* #topics_table tbody tr:hover{
+    background: rgb(255, 0, 0, 0.2);
+} */
+
+#topics_table tbody tr.active {
+  background: rgb(255, 0, 0, 0.3);
+}
+
+#intertopic_map {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  float: left;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+}
+
+#topic_panel {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  float: left;
+  border: 1px solid black;
+  background-color: rgb(255, 255, 255);
+}
+
+#topic_detail {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  float: left;
+  border: 1px solid black;
+}
+
+#topic_detail #summary_block {
+  display: none;
+  position: absolute;
+  height: 32px;
+  width: 402px;
+  top: 59px;
+  left: 9px;
+  background-color: white;
+  z-index: 1;
+}
+
+#topic_detail #summary {
+  position: relative;
+  height: 30px;
+  width: 400px;
+  top: 40px;
+  left: 10px;
+}
+
+#topic_detail table {
+  position: relative;
+  top: 40px;
+  font-size: 12px;
+  width: 85%;
+}
+
+#topic_detail thead {
+  display: block;
+}
+
+#topic_detail th {
+  font-weight: bold;
+  text-align: left;
+  color: rgb(0, 0, 0);
+  opacity: 1;
+  height: 35px;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  padding-left: 10px;
+}
+
+#topic_detail .edited {
+  background: rgba(255, 0, 0, 0.08);
+}
+
+#topic_detail .topic_words {
+  width: 300px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topic_detail .topic_weight_weightbar {
+  width: 130px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topic_detail .topic_weightbar {
+  width: 75px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topic_detail .topic_weight {
+  width: 50px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topic_detail td {
+  padding-left: 10px;
+  height: 35px;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#topic_detail tbody {
+  display: block;
+  height: 393px;
+  overflow: auto;
+}
+
+#topic_detail button {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+}
+
+#topic_detail #back {
+  right: 10px;
+}
+
+#topic_detail #add {
+  top: 155px;
+  right: 10px;
+}
+
+#topic_detail #delete {
+  top: 195px;
+  right: 10px;
+}
+
+#topic_detail tbody tr:hover {
+  background: rgb(255, 0, 0, 0.2);
+}
+
+#topic_detail tbody tr.active {
+  background: rgb(255, 0, 0, 0.3);
+}
+
+#docs_list {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  float: left;
+  border: 1px solid black;
+}
+
+#docs_list table {
+  position: relative;
+  top: 40px;
+  font-size: 12px;
+  width: 85%;
+}
+
+#docs_list thead {
+  display: block;
+}
+
+#docs_list th {
+  font-weight: bold;
+  text-align: left;
+  color: rgb(0, 0, 0);
+  opacity: 1;
+  height: 35px;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  padding-left: 10px;
+}
+
+#docs_list .document {
+  width: 255px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list .id {
+  width: 75px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list .weight_weightbar {
+  width: 90px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list .weightbar {
+  width: 50px;
+  border-left: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list .weight {
+  width: 40px;
+  border-right: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list td {
+  padding-left: 10px;
+  height: 35px;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+}
+
+#docs_list tbody {
+  display: block;
+  height: 423px;
+  overflow: auto;
+}
+
+#docs_list button {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+}
+
+#docs_list #doc_view {
+  top: 60px;
+  right: 10px;
+}
+
+#docs_list #doc_delete {
+  top: 100px;
+  right: 10px;
+}
+
+#docs_list tbody tr:hover {
+  background: rgb(255, 0, 0, 0.1);
+}
+
+#docs_list tbody tr.active {
+  background: rgb(255, 0, 0, 0.2);
+}
+
+#topic_panel .slider {
+  position: relative;
+  top: 40px;
+  height: 50px;
+  width: 84%;
+}
+
+#topic_panel .range-slider {
+  position: relative;
+  float: right;
+  height: 100%;
+  width: 45%;
+  padding-top: 10px;
+}
+
+#topic_panel .range-slider .lambda {
+  position: relative;
+  height: 100%;
+  width: 90%;
+  margin: 0 10px;
+}
+
+#topic_panel .lambda-label {
+  position: relative;
+  float: right;
+  height: 100%;
+  width: 55%;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+#topic_panel .lambda-label p {
+  position: relative;
+  height: 50%;
+  width: 100%;
+  top: 0px;
+  left: 0px;
+}
+
+#topic_panel .lambda-label label {
+  position: relative;
+  height: 50%;
+  width: 100%;
+  top: 0px;
+  left: 0px;
+}
+
+#split_panel {
+  display: none;
+  width: 600px;
+  height: 450px;
+  position: absolute;
+  text-align: left;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid black;
+  background-color: rgb(255, 255, 255);
+  z-index: 1;
+}
+
+#split_panel label {
+  position: absolute;
+  top: 13.5px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  font-weight: bold;
+}
+
+#split_panel p {
+  position: absolute;
+  top: 45px;
+  left: 4%;
+  /* transform: translate(-50%, 0%); */
+  font-size: 12px;
+}
+
+.left_panel {
+  height: 70%;
+  width: 44%;
+  text-align: left;
+  position: relative;
+  border: 1px solid hsl(0, 0%, 0%);
+  border-radius: 0px;
+  float: left;
+  left: 4%;
+  top: 15%;
+}
+
+#left_panel_block {
+  display: none;
+  height: 70%;
+  width: 44%;
+  text-align: left;
+  position: absolute;
+  border: 1px solid hsl(0, 0%, 0%);
+  border-radius: 0px;
+  float: left;
+  left: 4%;
+  top: 15%;
+  background-color: white;
+  z-index: 1;
+}
+
+.right_panel {
+  height: 70%;
+  width: 44%;
+  text-align: left;
+  position: relative;
+  border: 1px solid black;
+  border-radius: 0px;
+  float: right;
+  right: 4%;
+  top: 15%;
+}
+
+.words_table {
+  position: relative;
+  margin-top: 1px;
+  font-size: 12px;
+  width: 100%;
+  /* border: 1px solid black; */
+  /* border-color: rgba(0, 0, 0, 0.1); */
+}
+
+.words_table thead {
+  width: 100%;
+}
+
+.words_table tbody {
+  display: block;
+  width: 100%;
+  height: 266px;
+  border: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  overflow: auto;
+}
+
+.words_table th {
+  font-weight: bold;
+  text-align: left;
+  color: rgb(0, 0, 0);
+  opacity: 1;
+  height: 35px;
+  width: 100%;
+  border: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  padding-left: 5px;
+}
+
+.words_table td {
+  height: 35px;
+  width: 300px;
+  border-bottom: 1px solid black;
+  border-color: rgba(0, 0, 0, 0.089);
+  padding-left: 5px;
+}
+
+.words_table td button {
+  font-size: large;
+  float: right;
+  margin-right: 5px;
+  /* border: none; */
+  background: none;
+  width: 50px;
+}
+
+#split_cancel {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  right: 4%;
+  bottom: 5%;
+}
+
+#split_apply {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  right: 15%;
+  bottom: 5%;
+}
+
+#add_words_panel {
+  display: none;
+  width: 600px;
+  height: 450px;
+  position: absolute;
+  text-align: left;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid black;
+  background-color: rgb(255, 255, 255);
+  z-index: 1;
+}
+
+#add_words_panel label {
+  position: absolute;
+  top: 13.5px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  font-weight: bold;
+}
+
+#add_words_panel p {
+  position: absolute;
+  top: 45px;
+  left: 4%;
+  /* transform: translate(-50%, 0%); */
+  font-size: 12px;
+}
+
+#doc_detail {
+  display: none;
+  width: 500px;
+  height: 400px;
+  position: absolute;
+  text-align: left;
+  top: 50%;
+  left: 50%;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 40px;
+  transform: translate(-50%, -50%);
+  border: 1px solid black;
+  background-color: rgb(255, 255, 255);
+  z-index: 1;
+}
+
+#doc_detail #doc_title {
+  width: 420px;
+  height: 30px;
+  margin-top: 10px;
+  resize: none;
+}
+
+#doc_detail #doc_abstract {
+  width: 420px;
+  height: 200px;
+  margin-top: 10px;
+  overflow-y: scroll;
+  resize: none;
+}
+
+#doc_detail button {
+  width: 70px;
+  height: 35px;
+  float: right;
+  margin-top: 10px;
+}
+
+#intertopic_map .predraw {
+  float: right;
+  position: relative;
+  top: 6%;
+  height: 90.5%;
+  width: 100%;
+  padding: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#intertopic_map .predraw text {
+  font-size: 12px;
+}
+
+#intertopic_map .predraw text {
+  font-size: 12px;
+}
+
+.progress {
+  position: relative;
+  float: left;
+  top: 100px;
+  height: 100px;
+  width: 1536px;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+}
+
+.progress_bar {
+  position: relative;
+  float: left;
+  height: 100%;
+  width: 1336px;
+  text-align: left;
+  border-radius: 0px;
+  display: none;
+}
+
+.progress p {
+  padding-top: 20px;
+  padding-left: 10px;
+  height: 50px;
+  font-size: 20px;
+}
+
+.progress progress[value]::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+.progress progress[value] {
+  /* -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 40px;
+    padding-left: 10px; */
+
+  /* display: block; */
+  appearance: none;
+  width: 100%;
+  height: 40px;
+  padding-left: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* border: none;
+    border-radius: 8px;
+    box-shadow: inset 4px 4px 4px rgba(84, 30, 8, 0.2);
+    background-color: rgba(149, 250, 61, 0.1);
+    border: 1px solid #ccc; */
+  animation: colorrush 4s infinite linear;
+}
+
+.progress progress[value]::-webkit-progress-inner-element {
+  border-radius: 8px;
+  overflow: hidden;
+  background-position: inherit;
+}
+.progress progress[value]::-webkit-progress-bar {
+  border-radius: 8px;
+  background-color: transparent;
+  background-position: inherit;
+}
+.progress progress[value]::-webkit-progress-value {
+  border-radius: 10px 0 0 10px / 10px 0 0 10px;
+  box-shadow: inset 2px 2px 2px rgba(90, 90, 92, 0.2);
+  background: repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      rgba(0, 0, 0, 0.1) 6px 12px
+    ),
+    linear-gradient(#4a54ba, #888ccf, #b8b9cc);
+  background-size: calc(12px / 0.707) 100%, /* 0.707 = cos(45deg)*/ 100% 800%;
+  background-position: inherit;
+}
+.progress progress[value]::-moz-progress-bar {
+  border-radius: 10px 0 0 10px / 10px 0 0 10px;
+  box-shadow: inset 2px 2px 2px rgba(90, 90, 92, 0.2);
+  background: repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      rgba(0, 0, 0, 0.1) 6px 12px
+    ),
+    linear-gradient(#4a54ba, #888ccf, #b8b9cc);
+  background-size: calc(12px / 0.707) 100%, /* 0.707 = cos(45deg)*/ 100% 800%;
+  background-position: inherit;
+}
+
+@keyframes colorrush {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: calc(10 * (12px / 0.707)) 100%;
+  }
+}
+
+.progress_button {
+  position: relative;
+  float: right;
+  height: 100%;
+  width: 195px;
+  text-align: center;
+}
+
+.progress_button button {
+  height: 50px;
+  width: 150px;
+  margin-top: 40px;
+}

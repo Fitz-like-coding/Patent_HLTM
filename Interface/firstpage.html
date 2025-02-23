@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TopicBrowser</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="css/firstpage.css" type="text/css" />
+  </head>
+
+  <body>
+    <section class="settings">
+      <!-- <form action="index.html" method="POST"> -->
+      <section class="query">
+        <label for="query">Input Query:</label>
+        <br />
+        <input
+          id="query"
+          type="text"
+          name="query"
+          value="computer science"
+          placeholder="input your query"
+        />
+      </section>
+      <section class="model_setting">
+        <button type="button" onclick="getModelSetting()">
+          Model Settings
+        </button>
+        <section id="model_setting">
+          <label for="topic_number">Initial number of topics</label>
+          <input
+            id="topic_number"
+            type="number"
+            name="topic_number"
+            value="14"
+            min="2"
+            step="1"
+            required
+          />
+          <br /><br />
+          <label for="iters">Initial number of iterations</label>
+          <input
+            id="iters"
+            type="number"
+            name="iters"
+            value="50"
+            min="1"
+            step="1"
+            required
+          />
+          <br /><br />
+          <label for="beta">Hyperparameter beta</label>
+          <input
+            id="beta"
+            type="number"
+            name="beta"
+            value="0.5"
+            min="0"
+            step="0.1"
+            required
+          />
+          <br /><br />
+          <label for="gamma">Hyperparameter gamma</label>
+          <input
+            id="gamma"
+            type="number"
+            name="gamma"
+            value="1.5"
+            min="0"
+            step="0.1"
+            required
+          />
+          <br /><br />
+          <label for="alpha">Hyperparameter alpha</label>
+          <input
+            id="alpha"
+            type="number"
+            name="alpha"
+            value="1.0"
+            min="0"
+            step="0.1"
+            required
+          />
+        </section>
+      </section>
+      <section class="query_setting">
+        <button type="button" onclick="getQuerySetting()">
+          Query Settings
+        </button>
+        <section id="query_setting">
+          <label for="rule1">All the words in the text</label>
+          <input id="rule1" type="radio" name="rule" value="AND" required />
+          <br /><br />
+          <label for="rule2">At least one of the words in the text</label>
+          <input
+            id="rule2"
+            type="radio"
+            name="rule"
+            value="OR"
+            checked="checked"
+            required
+          />
+          <br /><br />
+          <label for="rule3">Query expansion method</label>
+          <select name="query_method" id="rule3">
+            <option value="KLD">KLD</option>
+            <option value="FRE">FRE</option>
+            <option value="REL">REL</option>
+          </select>
+          <!-- <br><br>
+                <label for="rule3">Number of top documents to consider</label>
+                <input id="rule3" type="number" name="rule" value=0 min=0 step="1"> -->
+        </section>
+      </section>
+      <!-- <section class="vocabulary">
+                <label for="vob">Check vocabulary list</label>
+                <input list="vobs" id="vob" name="sauce">
+                <datalist id="vobs">
+                    <option value="computer"></option>
+                    <option value="science"></option>
+                    <option value="cpu"></option>
+                </datalist>
+            </section>
+            <br> -->
+      <!-- <section class="comments">
+                <label for="comments">Any comments?</label>
+                <br>
+                <textarea id="comments" name="comments" rows="3" cols="40" minlength="5"
+                    maxlength="250">please leave your comments here</textarea>
+            </section>
+            <br> -->
+      <section class="submission">
+        <button type="button" onclick="getCandidateWords()">Submit</button>
+      </section>
+      <!-- </form> -->
+    </section>
+    <section class="panels">
+      <section class="left_panel">
+        <!-- <select name="query_method" id="query_method">
+                <option value="kld">By KLD method</option>
+                <option value="fre">By FRE method</option>
+                <option value="rel">By REL method</option>
+            </select> -->
+        <select name="list_type" id="list_type" onchange="changeTable()">
+          <option value="keywords">By keywords</option>
+          <option value="docs">By documents</option>
+        </select>
+        <table class="words_table" id="cand_words_table">
+          <thead>
+            <tr>
+              <th scope="col" class="word">Candidate Concept Words</th>
+              <th scope="col" class="score">Rank Scores</th>
+            </tr>
+          </thead>
+          <tbody class="tbody cand_tbody">
+            <!-- <tr>
+                        <td class="word">computer <button type="button"
+                                onclick="addConceptWord(this.parentElement.textContent, document.getElementById(\"selected_topic\").value)">+</button></td>
+                        <td class="score">0.9</td>
+                    </tr> -->
+          </tbody>
+        </table>
+        <table class="docs_table" id="docs_table">
+          <thead>
+            <tr>
+              <th scope="col">Relevant Documents</th>
+            </tr>
+          </thead>
+          <tbody class="tbody cand_tbody">
+            <!-- <tr>
+                        <td>Computer science is very important. <button type="button"
+                                onclick="setTitleAndAbstract(this.parentNode.parentNode.rowIndex), showDocDetail()"><i
+                                    class="fa fa-eye"></i></button></td>
+                    </tr> -->
+          </tbody>
+        </table>
+      </section>
+      <section class="right_panel">
+        <select
+          name="selected_topic"
+          id="selected_topic"
+          onchange="refreshConceptTable()"
+        >
+          <!-- <option value="ConceptTopic1">ConceptTopic1</option> -->
+        </select>
+        <section class="topic_editor">
+          <button type="button" onclick="addConcept(),refreshConceptTable()">
+            +
+          </button>
+          <button type="button" onclick="removeConcept(),refreshConceptTable()">
+            -
+          </button>
+          <button type="button" onclick="showRenamePanel()">*</button>
+        </section>
+        <table class="words_table">
+          <thead>
+            <tr>
+              <th scope="col">
+                Final Concept Word
+                <input
+                  id="concept_word"
+                  type="text"
+                  name="concept_word"
+                  value=""
+                  placeholder="input concept word"
+                />
+                <button
+                  type="button"
+                  onclick="addConceptWord(document.getElementById('concept_word').value, document.getElementById('selected_topic').value)"
+                >
+                  +
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="tbody final_tbody">
+            <!-- <tr>
+                        <td>computer <button type="button" onclick="removeConceptWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex, document.getElementById(\"selected_topic\").value)">-</button></td>
+                    </tr> -->
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section class="progress">
+      <section class="progress_bar">
+        <p>Progress Bar:</p>
+        <br />
+        <progress id="p" max="100" value="0"><span>0</span>%</progress>
+      </section>
+      <section class="progress_button">
+        <button type="button" id="clear" onclick="clearCache()">Clear</button>
+        <button type="button" id="apply" onclick="apply_config()">Apply</button>
+        <br />
+        <br />
+        <button type="submit" id="view" onclick="viewModelDetails()" disabled>
+          View
+        </button>
+      </section>
+    </section>
+    <section id="doc_detail">
+      <label for="title">Title:</label>
+      <br />
+      <textarea name="title" id="title" cols="30" rows="1" readonly>
+title</textarea
+      >
+      <br />
+      <label for="abstract">Abstract:</label>
+      <br />
+      <textarea name="abstract" id="abstract" cols="30" rows="10" readonly>
+abstract</textarea
+      >
+      <button class="view_doc_button" onclick="showDocDetail()">Close</button>
+    </section>
+    <section id="concept_rename_panel">
+      <label for="old_name">Old Name:</label>
+      <br />
+      <textarea name="old_name" id="old_name" cols="30" rows="1" readonly>
+old_name</textarea
+      >
+      <br />
+      <label for="new_name">New Name:</label>
+      <br />
+      <textarea name="new_name" id="new_name" cols="30" rows="1">
+new_name</textarea
+      >
+      <button onclick="showRenamePanel(),renameConcept()">Apply</button>
+    </section>
+    <div class="modal"><!-- Place at bottom of page --></div>
+    <script>
+      const QE_API_ADDRESS = "http://localhost:8060/";
+      const MODEL_API_ADDRESS = "http://localhost:8050/";
+      // const iters = "2000";
+
+      function restrict(someText, size) {
+        // size must be > 3
+        if (someText != null && someText.length > size) {
+          someText = someText.substr(0, size - 3) + "...";
+        }
+        return someText;
+      }
+
+      function getModelSetting() {
+        var x = document.getElementById("query_setting");
+        x.style.display = "none";
+        x = document.getElementById("model_setting");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+
+      function getQuerySetting() {
+        var x = document.getElementById("model_setting");
+        x.style.display = "none";
+        x = document.getElementById("query_setting");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+
+      function changeTable() {
+        var x = document.getElementById("list_type");
+        if (x.value == "keywords") {
+          var y = document.getElementById("docs_table");
+          y.style.display = "none";
+          y = document.getElementById("cand_words_table");
+          if (y.style.display != "block") {
+            y.style.display = "block";
+          }
+        } else if (x.value == "docs") {
+          var y = document.getElementById("cand_words_table");
+          y.style.display = "none";
+          y = document.getElementById("docs_table");
+          if (y.style.display != "block") {
+            y.style.display = "block";
+          }
+        }
+      }
+
+      // add code here to get candidate_words from server using the input query
+      // const candidate_words = []
+      var candidate_words = sessionStorage.getItem("candidate_words")
+        ? JSON.parse(sessionStorage.getItem("candidate_words"))
+        : [];
+      showCandidatetWords();
+
+      function getCandidateWords() {
+        var query = document.getElementById("query").value;
+        var rule = document.querySelector('input[name="rule"]:checked').value;
+        var method = document.getElementById("rule3").value;
+        console.log(query, rule, method);
+        candidate_words = [];
+        documents = [];
+        showCandidatetWords();
+        showDocuments();
+        $body = $("body");
+        $body.addClass("loading");
+        $.ajax({
+          url:
+            QE_API_ADDRESS +
+            "&query_expansiom=" +
+            query +
+            "&rule=" +
+            rule +
+            "&method=" +
+            method,
+          success: function (data) {
+            $body.removeClass("loading");
+            candidate_words = data["keywords"];
+            sessionStorage.setItem(
+              "candidate_words",
+              JSON.stringify(candidate_words)
+            );
+            console.log(candidate_words);
+
+            documents = data["documents"];
+            sessionStorage.setItem("documents", JSON.stringify(documents));
+            showCandidatetWords();
+            showDocuments();
+          },
+          error: function (xhr, options, err) {
+            $body.removeClass("loading");
+            alert("query not exist in the source dataset");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      function showCandidatetWords() {
+        var table = document.getElementsByClassName("tbody cand_tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+        candidate_words.forEach(function (currentValue) {
+          var row = table.insertRow();
+          var cell1 = row.insertCell();
+          cell1.className = "word";
+          cell1.innerHTML = currentValue.word;
+          var cell2 = row.insertCell();
+          cell2.className = "score";
+          cell2.innerHTML =
+            currentValue.score +
+            "<button type='button' onclick='addConceptWord(\"" +
+            currentValue.word +
+            '", document.getElementById("selected_topic").value)\'>+</button>';
+        });
+      }
+
+      var concept = JSON.parse(sessionStorage.getItem("concept"));
+      var add_history_count = JSON.parse(
+        sessionStorage.getItem("add_history_count")
+      );
+      if (concept) {
+        console.log(concept);
+        showConceptList();
+        refreshConceptTable();
+      } else {
+        concept = {
+          ConceptTopic1: [],
+        };
+        add_history_count = 2;
+        showConceptList();
+        refreshConceptTable();
+        sessionStorage.setItem("concept", JSON.stringify(concept));
+        sessionStorage.setItem(
+          "add_history_count",
+          JSON.stringify(add_history_count)
+        );
+      }
+
+      function addConceptWord(term, target_concept) {
+        console.log(term);
+        var word = /\w+/g.exec(term)[0];
+        var final_words = concept[target_concept];
+        var table = document.getElementsByClassName("tbody final_tbody")[0];
+
+        $.ajax({
+          url: QE_API_ADDRESS + "&preprocess=" + word,
+          success: function (data) {
+            if (data["state"] == true) {
+              word = data["processed_word"];
+              if (!final_words.includes(word)) {
+                final_words.push(word);
+                var row = table.insertRow();
+                var cell1 = row.insertCell();
+                cell1.innerHTML =
+                  word +
+                  "<button type='button' onclick='removeConceptWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex, document.getElementById(\"selected_topic\").value)'>-</button>";
+              }
+              sessionStorage.setItem("concept", JSON.stringify(concept));
+              sessionStorage.setItem(
+                "add_history_count",
+                JSON.stringify(add_history_count)
+              );
+              console.log(concept);
+            } else {
+              alert("input word not exist in the vocabulary list.");
+              console.log("error");
+            }
+          },
+          error: function (xhr, options, err) {
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+
+        // if (!final_words.includes(word)) {
+        //     final_words.push(word)
+        //     var row = table.insertRow();
+        //     var cell1 = row.insertCell();
+        //     cell1.innerHTML = word +
+        //         "<button type='button' onclick='removeConceptWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex, document.getElementById(\"selected_topic\").value)'>-</button>";
+        // }
+        // sessionStorage.setItem('concept', JSON.stringify(concept));
+        // sessionStorage.setItem('add_history_count', JSON.stringify(add_history_count));
+        // console.log(concept);
+      }
+
+      function removeConceptWord(term, rowIndex, target_concept) {
+        var word = /\w+/g.exec(term)[0];
+        var final_words = concept[target_concept];
+        var table = document.getElementsByClassName("tbody final_tbody")[0];
+        if (final_words.includes(word)) {
+          const index = final_words.indexOf(word);
+          final_words.splice(index, 1);
+          table.deleteRow(rowIndex - 1);
+        }
+        sessionStorage.setItem("concept", JSON.stringify(concept));
+        sessionStorage.setItem(
+          "add_history_count",
+          JSON.stringify(add_history_count)
+        );
+        console.log(concept);
+      }
+
+      function addConcept() {
+        var new_concept = "ConceptTopic" + String(add_history_count);
+        concept[new_concept] = [];
+        var x = document.getElementById("selected_topic");
+        var option = document.createElement("option");
+        option.value = new_concept;
+        option.text = new_concept;
+        x.add(option);
+        x.value = new_concept;
+        add_history_count += 1;
+        sessionStorage.setItem("concept", JSON.stringify(concept));
+        sessionStorage.setItem(
+          "add_history_count",
+          JSON.stringify(add_history_count)
+        );
+        console.log(concept);
+      }
+
+      function removeConcept() {
+        var x = document.getElementById("selected_topic");
+        delete concept[x.value];
+        x.remove(x.selectedIndex);
+        sessionStorage.setItem("concept", JSON.stringify(concept));
+        sessionStorage.setItem(
+          "add_history_count",
+          JSON.stringify(add_history_count)
+        );
+        console.log(concept);
+      }
+
+      function showConceptList() {
+        var x = document.getElementById("selected_topic");
+        var keys = Object.keys(concept);
+        for (var i = 0; i < keys.length; i++) {
+          var option = document.createElement("option");
+          option.value = keys[i];
+          option.text = keys[i];
+          x.add(option);
+        }
+      }
+
+      function refreshConceptTable() {
+        var table = document.getElementsByClassName("tbody final_tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+        if (document.getElementById("selected_topic").length > 0) {
+          var target_concept = document.getElementById("selected_topic").value;
+          concept[target_concept].forEach(function (currentValue) {
+            var row = table.insertRow();
+            var cell1 = row.insertCell();
+            cell1.innerHTML =
+              currentValue +
+              "<button type='button' onclick='removeConceptWord(this.parentElement.textContent, this.parentNode.parentNode.rowIndex, document.getElementById(\"selected_topic\").value)'>-</button>";
+          });
+        }
+      }
+
+      function showRenamePanel() {
+        var x = document.getElementById("old_name");
+        x.value = document.getElementById("selected_topic").value;
+        var x = document.getElementById("concept_rename_panel");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+
+      function renameConcept() {
+        var x = document.getElementById("selected_topic");
+        new_key = document
+          .getElementById("new_name")
+          .value.replace(/\n+/g, " ")
+          .replace(/^[\s\n]+|[\n\s]+$/g, "");
+        old_key = document.getElementById("old_name").value;
+        if (!(new_key in concept)) {
+          x.options[x.selectedIndex].value = new_key;
+          x.options[x.selectedIndex].text = new_key;
+          if (old_key !== new_key) {
+            Object.defineProperty(
+              concept,
+              new_key,
+              Object.getOwnPropertyDescriptor(concept, old_key)
+            );
+            delete concept[old_key];
+          }
+        }
+        sessionStorage.setItem("concept", JSON.stringify(concept));
+      }
+
+      var documents = sessionStorage.getItem("documents")
+        ? JSON.parse(sessionStorage.getItem("documents"))
+        : [];
+      showDocuments();
+
+      function showDocuments() {
+        var table = document
+          .getElementById("docs_table")
+          .getElementsByClassName("tbody cand_tbody")[0];
+        var rowCount = table.rows.length;
+        for (var i = rowCount - 1; i >= 0; i--) {
+          table.deleteRow(i);
+        }
+        documents.forEach(function (currentValue) {
+          var row = table.insertRow();
+          var cell1 = row.insertCell();
+          cell1.innerHTML =
+            restrict(currentValue.title, 50) +
+            "<button class='view_doc_button' type='button' onclick='setTitleAndAbstract(this.parentNode.parentNode.rowIndex), showDocDetail()'><i class='fa fa-eye'></i></button>";
+        });
+      }
+
+      function setTitleAndAbstract(rowIndex) {
+        var y = document.getElementById("title");
+        y.value = documents[rowIndex - 1].title;
+        y = document.getElementById("abstract");
+        y.value = documents[rowIndex - 1].abstract;
+      }
+
+      function showDocDetail() {
+        var x = document.getElementById("doc_detail");
+        if (x.style.display != "block") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+
+      var progressBar = document.getElementById("p");
+      function apply_config() {
+        var conceptCopy = {};
+        Object.keys(concept).forEach((key) => {
+          conceptCopy[key] = concept[key].join(",");
+        });
+        var topicNumber = document.getElementById("topic_number").value;
+        console.log(Object.keys(conceptCopy).length);
+        if (Object.keys(conceptCopy).length >= topicNumber) {
+          alert(
+            "the number of topics must be greate than the number of concpets defined."
+          );
+          return;
+        }
+        var iters = document.getElementById("iters").value;
+        var beta = document.getElementById("beta").value;
+        var gamma = document.getElementById("gamma").value;
+        var alpha = document.getElementById("alpha").value;
+        sessionStorage.setItem("iters", iters);
+        sessionStorage.setItem("beta", beta);
+        sessionStorage.setItem("gamma", gamma);
+        sessionStorage.setItem("alpha", alpha);
+        var params = {
+          stage: "initilize", // initilize, refine, update
+          name: "model1",
+          topicNumber: topicNumber,
+          beta: beta,
+          gamma: gamma,
+          alpha: alpha,
+          iters: iters,
+          conceptWords: conceptCopy,
+        };
+        console.log(params);
+        $.ajax({
+          type: "POST",
+          url: MODEL_API_ADDRESS,
+          data: JSON.stringify(params),
+          success: function (data) {
+            $(":button").prop("disabled", true);
+            $(".view_doc_button").prop("disabled", false);
+            console.log("success", data);
+            var x = document.getElementsByClassName("progress_bar")[0];
+            x.style.display = "block";
+            progressBar.value = 1;
+            progressBar.getElementsByTagName("span")[0].textContent = 1;
+            requestAnimationFrame(updateProgress);
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+        });
+      }
+
+      function updateProgress() {
+        var model_name = "model1";
+        var beta = document.getElementById("beta").value;
+        var iters = document.getElementById("iters").value;
+        var params = {
+          stage: "update progress bar", // initilize, refine, update
+          iters: iters,
+          name: model_name,
+        };
+        if (progressBar.value < 90) {
+          $.ajax({
+            type: "POST",
+            url: MODEL_API_ADDRESS,
+            data: JSON.stringify(params),
+            success: function (data) {
+              setTimeout(() => {
+                progressBar.value = Math.max(1, data.progress);
+                progressBar.getElementsByTagName("span")[0].textContent =
+                  Math.max(1, data.value);
+                requestAnimationFrame(updateProgress);
+              }, 500);
+            },
+            error: function (xhr, options, err) {
+              console.log("error");
+            },
+            timout: 1000,
+            dataType: "json",
+          });
+        } else if (progressBar.value < 100) {
+          var beta = sessionStorage.getItem("beta", beta);
+          console.log(beta);
+          $.ajax({
+            type: "GET",
+            url: QE_API_ADDRESS + "&dump=" + model_name + "&beta=" + beta,
+            success: function (topics) {
+              console.log(topics);
+
+              var model = {
+                  name: "model1",
+                  parent: "model1",
+                  topics: topics,
+                  refine_history: "",
+                  sx: 0,
+                  sy: 0,
+                  ex: 0,
+                  ey: 0,
+                  select_node: true,
+                  select_line: false,
+                  head: true,
+                },
+                start_x = 100,
+                start_y = 50;
+
+              start_model = model;
+              start_model.sx = start_x;
+              start_model.sy = start_y;
+              start_model.ex = start_x;
+              start_model.ey = start_y;
+
+              canvas_nodes = [start_model];
+              dumpCanvas(canvas_nodes);
+
+              // progressBar.value = 100;
+              // progressBar.getElementsByTagName('span')[0].textContent = 100;
+              // requestAnimationFrame(updateProgress);
+            },
+            error: function (xhr, options, err) {
+              console.log("error");
+            },
+            timout: 1000,
+            dataType: "json",
+          });
+        } else {
+          var x = document.getElementsByClassName("progress_bar")[0];
+          x.style.display = "none";
+          $("#view").prop("disabled", false);
+        }
+      }
+
+      function dumpCanvas(canvas_nodes) {
+        var params = {
+          stage: "dumpCanvas",
+          canvas_nodes: canvas_nodes,
+        };
+        $.ajax({
+          type: "POST",
+          url: QE_API_ADDRESS,
+          data: JSON.stringify(params, null, 4),
+          success: function (data) {
+            console.log("success");
+            progressBar.value = 100;
+            progressBar.getElementsByTagName("span")[0].textContent = 100;
+            requestAnimationFrame(updateProgress);
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log("error");
+            ß;
+          },
+          timout: 1000,
+          dataType: "json",
+          contentType: "application/json",
+        });
+      }
+
+      // load to new page
+      function viewModelDetails() {
+        location.href = "./secondpage.html";
+      }
+
+      checkServer();
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function checkServer() {
+        $body = $("body");
+        $body.addClass("loading");
+        console.log("Taking a break...");
+        await sleep(1000);
+        console.log("Two second later");
+        $.ajax({
+          type: "GET",
+          url: QE_API_ADDRESS + "&checkCache",
+          success: function (data) {
+            $body.removeClass("loading");
+            if (data == true) {
+              $(":button").prop("disabled", true);
+              $(".view_doc_button").prop("disabled", false);
+              $("#clear").prop("disabled", false);
+              $("#view").prop("disabled", false);
+              var x = document.getElementById("apply");
+              x.style.display = "none";
+              x = document.getElementById("clear");
+              x.style.display = "block";
+              alert(
+                'There are preciously trained models exist! \nClick "View" button on the bottom right side to view the models. \nClick "Clear" button on the bottom right side to remove the models.'
+              );
+            }
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+          contentType: "application/json",
+        });
+      }
+
+      function clearCache() {
+        $.ajax({
+          type: "GET",
+          url: QE_API_ADDRESS + "&clearCache",
+          success: function (data) {
+            if (data == true) {
+              $(":button").prop("disabled", false);
+              $(".view_doc_button").prop("disabled", false);
+              $("#apply").prop("disabled", false);
+              $("#clear").prop("disabled", true);
+              $("#view").prop("disabled", true);
+              var x = document.getElementById("apply");
+              x.style.display = "block";
+              x = document.getElementById("clear");
+              x.style.display = "none";
+              alert(
+                'Success removed cached models. We can click "apply" button to start a new finetuning process now.'
+              );
+              console.log("success");
+            }
+          },
+          error: function (xhr, options, err) {
+            alert("server not connected!");
+            console.log("error");
+          },
+          timout: 1000,
+          dataType: "json",
+          contentType: "application/json",
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+.nice {
+    font-family: sans-serif;
+}
+
+p#last {
+    color: red;
+}
+
+p.example {
+    color: green;
+}
+
+/* p {
+    color: blue;
+}  */
+
+.strongblue>strong {
+    color: blue;
+}
+
+a.special:link {
+    color: green;
+}
+
+a.special:visited {
+    color: red;
+}
+
+/* we should use this for selecting topics or words  */
+/* p:hover {
+    background-color: yellow;
+} */
+
+a:active {
+    font-weight: bold;
+}
+
+/* we should use this for selecting topics or words  */
+p:target {
+    font-weight: bold;
+}
+
+thead th {
+    background: #88CCF1;
+    color: #FFF;
+    font-family: 'Lato', sans-serif;
+    font-weight: 100;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+tr {
+    background: #f4f7f8;
+    border-bottom: 1px solid #FFF;
+    margin-bottom: 5px;
+}
+
+th,
+td {
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    padding: 20px;
+    text-align: left;
+    width: 33.3333%;
+    font-size: 18px;
+}
+
+section.left_panel {
+    color: red;
+}
+
+section.right_panel {
+    color: green;
+}
